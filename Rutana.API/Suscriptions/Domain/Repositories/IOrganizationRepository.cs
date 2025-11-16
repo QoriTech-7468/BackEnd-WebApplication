@@ -2,7 +2,7 @@ using Rutana.API.Shared.Domain.Repositories;
 using Rutana.API.Suscriptions.Domain.Model.Aggregates;
 using Rutana.API.Suscriptions.Domain.Model.ValueObjects;
 
-namespace Rutana.API.Suscriptions.Domain.Infrastructure.Repositories;
+namespace Rutana.API.Suscriptions.Domain.Repositories;
 
 /// <summary>
 /// Organization repository contract for the Subscriptions bounded context.

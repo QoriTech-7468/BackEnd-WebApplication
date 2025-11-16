@@ -1,6 +1,6 @@
 using Rutana.API.Suscriptions.Domain.Model.Commands;
 
-namespace Rutana.API.Suscriptions.Domain.Application.Services;
+namespace Rutana.API.Suscriptions.Domain.Services;
 
 /// <summary>
 /// Contract for organization command handling at the application layer.

@@ -1,7 +1,7 @@
 using Rutana.API.Suscriptions.Domain.Model.Aggregates;
 using Rutana.API.Suscriptions.Domain.Model.Queries;
 
-namespace Rutana.API.Suscriptions.Domain.Application.Services;
+namespace Rutana.API.Suscriptions.Domain.Services;
 
 /// <summary>
 /// Contract for organization query handling at the application layer.
