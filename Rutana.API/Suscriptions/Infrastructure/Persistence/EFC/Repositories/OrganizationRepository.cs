@@ -8,17 +8,21 @@ using Rutana.API.Suscriptions.Domain.Model.ValueObjects;
 namespace Rutana.API.Suscriptions.Infrastructure.Persistence.EFC.Repositories;
 
 /// <summary>
-/// Entity Framework Core implementation of <see cref="IOrganizationRepository" />.
+/// Repository implementation for managing Organization aggregate persistence.
 /// </summary>
-public class OrganizationRepository : BaseRepository<Organization>, IOrganizationRepository
+/// <param name="context">
+/// The <see cref="AppDbContext"/> to use.
+/// </param>
+public class OrganizationRepository(AppDbContext context) : BaseRepository<Organization>(context), IOrganizationRepository
 {
-
+    /// <inheritdoc />
     public async Task<Organization?> FindByRucAsync(Ruc ruc)
     {
         return await Context.Set<Organization>()
             .FirstOrDefaultAsync(o => o.Ruc.Value == ruc.Value);
     }
 
+    /// <inheritdoc />
     public async Task<bool> ExistsByRucAsync(Ruc ruc)
     {
         return await Context.Set<Organization>()

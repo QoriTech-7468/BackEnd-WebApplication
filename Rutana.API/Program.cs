@@ -4,6 +4,7 @@ using Rutana.API.Shared.Infrastructure.Interfaces.ASP.Configuration;
 using Rutana.API.Shared.Infrastructure.Interfaces.ASP.Configuration.Extensions;
 using Rutana.API.Shared.Infrastructure.Mediator.Cortex.Configuration.Extensions;
 using Rutana.API.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions;
+using Rutana.API.Suscriptions.Infrastructure.Interfaces.ASP.Configuration.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,7 @@ builder.AddOpenApiDocumentationServices();
 // Dependency Injection - Bounded Context Services Registration
 builder.AddSharedContextServices();
 builder.AddFleetContextServices();
+builder.AddSubscriptionsContextServices();
 
 // Mediator Configuration
 builder.AddCortexConfigurationServices();

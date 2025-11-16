@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Rutana.API.Fleet.Domain.Model.Aggregates;
+using Rutana.API.Shared.Domain.Model.ValueObjects;
+using Rutana.API.Suscriptions.Domain.Model.Aggregates;
 
 namespace Rutana.API.Fleet.Infrastructure.Persistence.EFC.Configuration.Extensions;
 
@@ -28,13 +30,27 @@ public static class ModelBuilderExtensions
                 .HasMaxLength(20);
         });
 
-        builder.Entity<Vehicle>().OwnsOne(v => v.OrganizationId, o =>
-        {
-            o.WithOwner().HasForeignKey("Id");
-            o.Property(org => org.Value)
-                .HasColumnName("OrganizationId")
-                .IsRequired();
-        });
+        // OrganizationId as owned type with conversion
+        builder.Entity<Vehicle>()
+            .OwnsOne(v => v.OrganizationId, ownedNavigationBuilder =>
+            {
+                ownedNavigationBuilder.WithOwner().HasForeignKey("Id");
+                ownedNavigationBuilder.Property(org => org.Value)
+                    .HasColumnName("OrganizationId")
+                    .IsRequired()
+                    .HasConversion(
+                        id => id.Value,
+                        value => new OrganizationId(value));
+            });
+
+        // Foreign key relationship to Organization aggregate
+        // Note: The relationship is configured using the shadow property created by OwnsOne
+        builder.Entity<Vehicle>()
+            .HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey("OrganizationId")
+            .HasPrincipalKey(o => o.Id.Value)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<Vehicle>().OwnsOne(v => v.Capacity, c =>
         {

@@ -1,5 +1,6 @@
 using Rutana.API.Fleet.Domain.Model.Commands;
 using Rutana.API.Fleet.Domain.Model.ValueObjects;
+using Rutana.API.Shared.Domain.Model.ValueObjects;
 
 namespace Rutana.API.Fleet.Domain.Model.Aggregates;
 
@@ -15,7 +16,7 @@ public class Vehicle
     public Vehicle()
     {
         Plate = new LicensePlate();
-        OrganizationId = new OrganizationId();
+        OrganizationId = new OrganizationId(0);
         Capacity = new VehicleCapacityKg();
         State = VehicleState.Enabled;
     }
