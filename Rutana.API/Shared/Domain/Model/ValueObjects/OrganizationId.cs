@@ -1,7 +1,7 @@
-namespace Rutana.API.Suscriptions.Domain.Model.ValueObjects;
+namespace Rutana.API.Shared.Domain.Model.ValueObjects;
 
 /// <summary>
-/// Strongly typed identifier for Organization aggregate.
+/// Strongly typed identifier for Organization aggregate that can be shared across bounded contexts.
 /// </summary>
 public readonly record struct OrganizationId(Guid Value)
 {
