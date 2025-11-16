@@ -1,29 +1,25 @@
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using EntityFrameworkCore.CreatedUpdatedDate.Contracts;
+
 namespace Rutana.API.Suscriptions.Domain.Model.Aggregates;
 
 /// <summary>
-/// Audit information for an organization aggregate.
-/// Modeled as an owned/value type inside the aggregate.
+/// Partial class for Organization audit fields.
+/// This integrates with EntityFrameworkCore.CreatedUpdatedDate to
+/// automatically manage CreatedDate and UpdatedDate.
 /// </summary>
-public class OrganizationAudit
+public partial class Organization : IEntityWithCreatedUpdatedDate
 {
-    public DateTime CreatedAt { get; private set; }
-    public DateTime UpdatedAt { get; private set; }
+    /// <summary>
+    /// Gets or sets the created date.
+    /// </summary>
+    [Column("created_at")]
+    public DateTimeOffset? CreatedDate { get; set; }
 
-    private OrganizationAudit() { }
-
-    private OrganizationAudit(DateTime createdAt, DateTime updatedAt)
-    {
-        CreatedAt = createdAt;
-        UpdatedAt = updatedAt;
-    }
-
-    public static OrganizationAudit CreateNew()
-        => new(DateTime.UtcNow, DateTime.UtcNow);
-
-    public void Touch()
-    {
-        UpdatedAt = DateTime.UtcNow;
-    }
+    /// <summary>
+    /// Gets or sets the updated date.
+    /// </summary>
+    [Column("updated_at")]
+    public DateTimeOffset? UpdatedDate { get; set; }
 }
-
-
