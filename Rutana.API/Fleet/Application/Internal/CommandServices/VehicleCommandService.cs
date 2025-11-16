@@ -3,6 +3,7 @@ using Rutana.API.Fleet.Domain.Model.Commands;
 using Rutana.API.Fleet.Domain.Model.ValueObjects;
 using Rutana.API.Fleet.Domain.Repositories;
 using Rutana.API.Fleet.Domain.Services;
+using Rutana.API.Shared.Domain.Model.ValueObjects;
 using Rutana.API.Shared.Domain.Repositories;
 
 namespace Rutana.API.Fleet.Application.Internal.CommandServices;
@@ -21,13 +22,14 @@ public class VehicleCommandService(
     /// <inheritdoc />
     public async Task<Vehicle?> Handle(RegisterVehicleCommand command)
     {
-        // Normalize the plate to match the format stored in the database (uppercase, trimmed)
-        var normalizedPlate = command.Plate.Trim().ToUpperInvariant();
+        // Create value objects from command
+        var plate = LicensePlate.Create(command.Plate);
+        var organizationId = new OrganizationId(command.OrganizationId);
         
         // Validate that the plate doesn't already exist in the organization
         var existingVehicle = await vehicleRepository.FindByPlateAndOrganizationIdAsync(
-            normalizedPlate, 
-            command.OrganizationId);
+            plate, 
+            organizationId);
 
         if (existingVehicle != null)
             throw new InvalidOperationException(
@@ -96,13 +98,13 @@ public class VehicleCommandService(
         if (vehicle == null)
             return null;
 
-        // Normalize the plate to match the format stored in the database (uppercase, trimmed)
-        var normalizedPlate = command.Plate.Trim().ToUpperInvariant();
+        // Create value objects from command
+        var newPlate = LicensePlate.Create(command.Plate);
         
         // Check if the new plate already exists in another vehicle of the same organization
         var existingVehicle = await vehicleRepository.FindByPlateAndOrganizationIdAsync(
-            normalizedPlate, 
-            vehicle.OrganizationId.Value);
+            newPlate, 
+            vehicle.OrganizationId);
 
         if (existingVehicle != null && existingVehicle.Id != command.VehicleId)
             throw new InvalidOperationException(

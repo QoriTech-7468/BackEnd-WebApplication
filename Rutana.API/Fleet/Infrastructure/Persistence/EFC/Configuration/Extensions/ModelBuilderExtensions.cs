@@ -16,59 +16,49 @@ public static class ModelBuilderExtensions
     /// <param name="builder">The model builder.</param>
     public static void ApplyFleetConfiguration(this ModelBuilder builder)
     {
-        // Vehicle Aggregate Configuration
-        builder.Entity<Vehicle>().HasKey(v => v.Id);
-        builder.Entity<Vehicle>().Property(v => v.Id).IsRequired().ValueGeneratedOnAdd();
+        var vehicle = builder.Entity<Vehicle>();
 
-        // Value Objects as Owned Types
-        builder.Entity<Vehicle>().OwnsOne(v => v.Plate, p =>
-        {
-            p.WithOwner().HasForeignKey("Id");
-            p.Property(plate => plate.Value)
-                .HasColumnName("Plate")
-                .IsRequired()
-                .HasMaxLength(20);
-        });
+        vehicle.HasKey(v => v.Id);
+        vehicle.Property(v => v.Id)
+       .IsRequired()
+       .ValueGeneratedOnAdd();
 
-        // OrganizationId as owned type with conversion
-        builder.Entity<Vehicle>()
-            .OwnsOne(v => v.OrganizationId, ownedNavigationBuilder =>
-            {
-                ownedNavigationBuilder.WithOwner().HasForeignKey("Id");
-                ownedNavigationBuilder.Property(org => org.Value)
-                    .HasColumnName("OrganizationId")
-                    .IsRequired()
-                    .HasConversion(
-                        id => id.Value,
-                        value => new OrganizationId(value));
-            });
+// Plate
+var plate = vehicle.OwnsOne(v => v.Plate);
+plate.WithOwner().HasForeignKey("Id");
+plate.Property(p => p.Value)
+     .HasColumnName("Plate")
+     .IsRequired()
+     .HasMaxLength(20);
 
-        // Foreign key relationship to Organization aggregate
-        // Note: The relationship is configured using the shadow property created by OwnsOne
-        builder.Entity<Vehicle>()
-            .HasOne<Organization>()
-            .WithMany()
-            .HasForeignKey("OrganizationId")
-            .HasPrincipalKey(o => o.Id.Value)
-            .OnDelete(DeleteBehavior.Restrict);
+// OrganizationId as property with conversion (not owned type, since it's a foreign key)
+vehicle.Property(v => v.OrganizationId)
+       .HasConversion(
+           id => id.Value,
+           value => new OrganizationId(value))
+       .HasColumnName("OrganizationId")
+       .IsRequired();
 
-        builder.Entity<Vehicle>().OwnsOne(v => v.Capacity, c =>
-        {
-            c.WithOwner().HasForeignKey("Id");
-            c.Property(cap => cap.Value)
-                .HasColumnName("CapacityKg")
-                .IsRequired()
-                .HasColumnType("decimal(18,2)");
-        });
+// Capacity
+var capacity = vehicle.OwnsOne(v => v.Capacity);
+capacity.WithOwner().HasForeignKey("Id");
+capacity.Property(c => c.Value)
+        .HasColumnName("CapacityKg")
+        .IsRequired()
+        .HasColumnType("decimal(18,2)");
 
-        // Enum as string
-        builder.Entity<Vehicle>()
-            .Property(v => v.State)
-            .HasConversion<string>()
-            .IsRequired()
-            .HasMaxLength(20);
+// Enum
+vehicle.Property(v => v.State)
+       .HasConversion<string>()
+       .IsRequired()
+       .HasMaxLength(20);
 
-        // Note: Indexes on Owned Type properties cannot be created here
-        // They will be added via raw SQL migration after the initial schema is created
+// Relación con Organization
+vehicle.HasOne<Organization>()
+       .WithMany()
+       .HasForeignKey(v => v.OrganizationId)
+       .HasPrincipalKey(o => o.Id)
+       .OnDelete(DeleteBehavior.Restrict);
+
     }
 }

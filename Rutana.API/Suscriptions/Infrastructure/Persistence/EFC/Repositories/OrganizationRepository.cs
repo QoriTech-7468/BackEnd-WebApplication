@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Rutana.API.Shared.Domain.Model.ValueObjects;
 using Rutana.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 using Rutana.API.Shared.Infrastructure.Persistence.EFC.Repositories;
 using Rutana.API.Suscriptions.Domain.Repositories;
@@ -15,6 +16,14 @@ namespace Rutana.API.Suscriptions.Infrastructure.Persistence.EFC.Repositories;
 /// </param>
 public class OrganizationRepository(AppDbContext context) : BaseRepository<Organization>(context), IOrganizationRepository
 {
+    /// <inheritdoc />
+    public override async Task<Organization?> FindByIdAsync(int id)
+    {
+        // Convert int to OrganizationId and use FindAsync which works correctly with value object primary keys
+        var organizationId = new OrganizationId(id);
+        return await Context.Set<Organization>().FindAsync(organizationId);
+    }
+
     /// <inheritdoc />
     public async Task<Organization?> FindByRucAsync(Ruc ruc)
     {

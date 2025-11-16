@@ -2,6 +2,7 @@ using Rutana.API.Fleet.Domain.Model.Aggregates;
 using Rutana.API.Fleet.Domain.Model.Queries;
 using Rutana.API.Fleet.Domain.Repositories;
 using Rutana.API.Fleet.Domain.Services;
+using Rutana.API.Shared.Domain.Model.ValueObjects;
 
 namespace Rutana.API.Fleet.Application.Internal.QueryServices;
 
@@ -22,12 +23,14 @@ public class VehicleQueryService(IVehicleRepository vehicleRepository)
     /// <inheritdoc />
     public async Task<IEnumerable<Vehicle>> Handle(GetVehiclesByOrganizationIdQuery query)
     {
-        return await vehicleRepository.FindByOrganizationIdAsync(query.OrganizationId);
+        var organizationId = new OrganizationId(query.OrganizationId);
+        return await vehicleRepository.FindByOrganizationIdAsync(organizationId);
     }
 
     /// <inheritdoc />
     public async Task<IEnumerable<Vehicle>> Handle(GetEnabledVehiclesByOrganizationIdQuery query)
     {
-        return await vehicleRepository.FindEnabledByOrganizationIdAsync(query.OrganizationId);
+        var organizationId = new OrganizationId(query.OrganizationId);
+        return await vehicleRepository.FindEnabledByOrganizationIdAsync(organizationId);
     }
 }
