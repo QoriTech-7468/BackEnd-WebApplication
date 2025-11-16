@@ -1,6 +1,7 @@
 using EntityFrameworkCore.CreatedUpdatedDate.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Rutana.API.Fleet.Infrastructure.Persistence.EFC.Configuration.Extensions;
+using Rutana.API.CRM.Infrastructure.Persistence.EFC.Configuration.Extensions;
 
 namespace Rutana.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 
@@ -31,6 +32,9 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
         // Fleet Context
         builder.ApplyFleetConfiguration();
+
+        // CRM Context
+        builder.ApplyCRMConfiguration();
 
         // Use snake case for database objects and pluralization for table names
         builder.UseSnakeCaseNamingConvention();
