@@ -1,3 +1,4 @@
+using Rutana.API.Fleet.Infrastructure.Interfaces.ASP.Configuration.Extensions;
 using Rutana.API.Shared.Infrastructure.Documentation.OpenApi.Configuration.Extensions;
 using Rutana.API.Shared.Infrastructure.Interfaces.ASP.Configuration;
 using Rutana.API.Shared.Infrastructure.Interfaces.ASP.Configuration.Extensions;
@@ -15,8 +16,9 @@ builder.AddDatabaseServices();
 // Open API Configuration
 builder.AddOpenApiDocumentationServices();
 
-// Dependency Injection
+// Dependency Injection - Bounded Context Services Registration
 builder.AddSharedContextServices();
+builder.AddFleetContextServices();
 
 // Mediator Configuration
 builder.AddCortexConfigurationServices();
