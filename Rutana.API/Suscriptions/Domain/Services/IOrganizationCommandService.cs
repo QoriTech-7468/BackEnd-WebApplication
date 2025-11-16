@@ -1,3 +1,4 @@
+using Rutana.API.Suscriptions.Domain.Model.Aggregates;
 using Rutana.API.Suscriptions.Domain.Model.Commands;
 
 namespace Rutana.API.Suscriptions.Domain.Services;
@@ -11,8 +12,8 @@ public interface IOrganizationCommandService
     /// Handles the create organization command.
     /// </summary>
     /// <param name="command">The create organization command.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    Task Handle(CreateOrganizationCommand command);
+    /// <returns>The created <see cref="Organization" /> if successful; otherwise, null.</returns>
+    Task<Organization?> Handle(CreateOrganizationCommand command);
 }
 
 
