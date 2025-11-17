@@ -1,5 +1,6 @@
 using Rutana.API.CRM.Domain.Model.Aggregates;
 using Rutana.API.CRM.Domain.Model.Queries;
+using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.CRM.Domain.Repositories;
 using Rutana.API.CRM.Domain.Services;
 
@@ -14,7 +15,7 @@ public class LocationQueryService(ILocationRepository locationRepository) : ILoc
     /// <inheritdoc />
     public async Task<IEnumerable<Location>> Handle(GetLocationsByClientIdQuery query)
     {
-        return await locationRepository.FindByClientIdAsync(query.ClientId);
+        return await locationRepository.FindByClientIdAsync(query.ClientId.Value);
     }
 
     /// <inheritdoc />

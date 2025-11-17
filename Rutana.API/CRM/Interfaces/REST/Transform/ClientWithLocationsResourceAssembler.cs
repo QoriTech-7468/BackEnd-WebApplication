@@ -26,7 +26,7 @@ public static class ClientWithLocationsResourceAssembler
             ));
 
         return new ClientWithLocationsResource(
-            client.Id,
+            client.Id.Value,
             client.CompanyName.Value,
             client.IsEnabled,
             locationResources);

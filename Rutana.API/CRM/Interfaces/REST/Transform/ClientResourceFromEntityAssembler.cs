@@ -16,7 +16,7 @@ public static class ClientResourceFromEntityAssembler
     public static ClientResource ToResourceFromEntity(Client entity)
     {
         return new ClientResource(
-            entity.Id,
+            entity.Id.Value,
             entity.CompanyName.Value,
             entity.IsEnabled);
     }

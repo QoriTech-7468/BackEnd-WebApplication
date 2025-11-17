@@ -16,7 +16,7 @@ public static class ClientSummaryResourceFromEntityAssembler
     public static ClientSummaryResource ToResourceFromEntity(Client entity)
     {
         return new ClientSummaryResource(
-            entity.Id,
+            entity.Id.Value,
             entity.CompanyName.Value);
     }
 }

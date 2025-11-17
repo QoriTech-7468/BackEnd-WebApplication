@@ -1,5 +1,6 @@
 using Rutana.API.CRM.Domain.Model.Aggregates;
 using Rutana.API.CRM.Domain.Model.Queries;
+using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.CRM.Domain.Repositories;
 using Rutana.API.CRM.Domain.Services;
 
@@ -20,6 +21,6 @@ public class ClientQueryService(IClientRepository clientRepository) : IClientQue
     /// <inheritdoc />
     public async Task<Client?> Handle(GetClientByIdQuery query)
     {
-        return await clientRepository.FindByIdAsync(query.ClientId);
+        return await clientRepository.FindByIdAsync(query.ClientId.Value);
     }
 }

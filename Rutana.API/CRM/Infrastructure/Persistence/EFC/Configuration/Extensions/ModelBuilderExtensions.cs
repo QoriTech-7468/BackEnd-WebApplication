@@ -20,7 +20,12 @@ public static class ModelBuilderExtensions
         // Client Aggregate Configuration
         // ===========================
         builder.Entity<Client>().HasKey(c => c.Id);
-        builder.Entity<Client>().Property(c => c.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<Client>().Property(c => c.Id)
+            .IsRequired()
+            .HasConversion(
+                id => id.Value,
+                value => new ClientId(value))
+            .ValueGeneratedOnAdd();
 
         // CompanyName as Owned Type
         builder.Entity<Client>().OwnsOne(c => c.CompanyName, cn =>

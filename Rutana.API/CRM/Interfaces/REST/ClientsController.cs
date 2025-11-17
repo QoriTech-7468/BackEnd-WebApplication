@@ -2,6 +2,7 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Rutana.API.CRM.Domain.Model.Commands;
 using Rutana.API.CRM.Domain.Model.Queries;
+using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.CRM.Domain.Services;
 using Rutana.API.CRM.Interfaces.REST.Resources;
 using Rutana.API.CRM.Interfaces.REST.Transform;
@@ -38,7 +39,8 @@ public class ClientsController(
     [SwaggerResponse(StatusCodes.Status404NotFound, "The client was not found")]
     public async Task<IActionResult> GetClientById(int clientId)
     {
-        var getClientByIdQuery = new GetClientByIdQuery(clientId);
+        var clientIdVo = new ClientId(clientId);
+        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
         var client = await clientQueryService.Handle(getClientByIdQuery);
         if (client is null) return NotFound();
         var resource = ClientResourceFromEntityAssembler.ToResourceFromEntity(client);
@@ -59,11 +61,12 @@ public class ClientsController(
     [SwaggerResponse(StatusCodes.Status404NotFound, "The client was not found")]
     public async Task<IActionResult> GetClientWithLocations(int clientId)
     {
-        var getClientByIdQuery = new GetClientByIdQuery(clientId);
+        var clientIdVo = new ClientId(clientId);
+        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
         var client = await clientQueryService.Handle(getClientByIdQuery);
         if (client is null) return NotFound();
 
-        var getLocationsByClientIdQuery = new GetLocationsByClientIdQuery(clientId);
+        var getLocationsByClientIdQuery = new GetLocationsByClientIdQuery(clientIdVo);
         var locations = await locationQueryService.Handle(getLocationsByClientIdQuery);
 
         var resource = ClientWithLocationsResourceAssembler.ToResourceFromEntity(client, locations);
@@ -107,7 +110,7 @@ public class ClientsController(
         var client = await clientCommandService.Handle(registerClientCommand);
         if (client is null) return BadRequest();
         var clientResource = ClientResourceFromEntityAssembler.ToResourceFromEntity(client);
-        return CreatedAtAction(nameof(GetClientById), new { clientId = client.Id }, clientResource);
+        return CreatedAtAction(nameof(GetClientById), new { clientId = client.Id.Value }, clientResource);
     }
 
     /// <summary>
@@ -124,7 +127,8 @@ public class ClientsController(
     [SwaggerResponse(StatusCodes.Status404NotFound, "The client was not found")]
     public async Task<IActionResult> EnableClient(int clientId)
     {
-        var enableClientCommand = new EnableClientCommand(clientId);
+        var clientIdVo = new ClientId(clientId);
+        var enableClientCommand = new EnableClientCommand(clientIdVo);
         var client = await clientCommandService.Handle(enableClientCommand);
         if (client is null) return NotFound();
         var clientResource = ClientResourceFromEntityAssembler.ToResourceFromEntity(client);
@@ -145,7 +149,8 @@ public class ClientsController(
     [SwaggerResponse(StatusCodes.Status404NotFound, "The client was not found")]
     public async Task<IActionResult> DisableClient(int clientId)
     {
-        var disableClientCommand = new DisableClientCommand(clientId);
+        var clientIdVo = new ClientId(clientId);
+        var disableClientCommand = new DisableClientCommand(clientIdVo);
         var client = await clientCommandService.Handle(disableClientCommand);
         if (client is null) return NotFound();
         var clientResource = ClientResourceFromEntityAssembler.ToResourceFromEntity(client);

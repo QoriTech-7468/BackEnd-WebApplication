@@ -1,5 +1,6 @@
 using Rutana.API.CRM.Domain.Model.Aggregates;
 using Rutana.API.CRM.Domain.Model.Commands;
+using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.CRM.Domain.Repositories;
 using Rutana.API.CRM.Domain.Services;
 using Rutana.API.Shared.Domain.Repositories;
@@ -36,7 +37,7 @@ public class ClientCommandService(
     /// <inheritdoc />
     public async Task<Client?> Handle(EnableClientCommand command)
     {
-        var client = await clientRepository.FindByIdAsync(command.ClientId);
+        var client = await clientRepository.FindByIdAsync(command.ClientId.Value);
         if (client is null)
             return null;
 
@@ -49,7 +50,7 @@ public class ClientCommandService(
     /// <inheritdoc />
     public async Task<Client?> Handle(DisableClientCommand command)
     {
-        var client = await clientRepository.FindByIdAsync(command.ClientId);
+        var client = await clientRepository.FindByIdAsync(command.ClientId.Value);
         if (client is null)
             return null;
 
