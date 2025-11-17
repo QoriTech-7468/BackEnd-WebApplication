@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Rutana.API.CRM.Domain.Model.Aggregates;
+using Rutana.API.Shared.Domain.Model.ValueObjects;
+using Rutana.API.Suscriptions.Domain.Model.Aggregates;
 
 namespace Rutana.API.CRM.Infrastructure.Persistence.EFC.Configuration.Extensions;
 
@@ -30,14 +32,20 @@ public static class ModelBuilderExtensions
                 .HasMaxLength(200);
         });
 
-        // OrganizationId as Owned Type
-        builder.Entity<Client>().OwnsOne(c => c.OrganizationId, o =>
-        {
-            o.WithOwner().HasForeignKey("Id");
-            o.Property(org => org.Value)
-                .HasColumnName("OrganizationId")
-                .IsRequired();
-        });
+        // OrganizationId as property with conversion (not owned type, since it's a foreign key)
+        builder.Entity<Client>().Property(c => c.OrganizationId)
+            .HasConversion(
+                id => id.Value,
+                value => new OrganizationId(value))
+            .HasColumnName("OrganizationId")
+            .IsRequired();
+
+        // Relación con Organization
+        builder.Entity<Client>().HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(c => c.OrganizationId)
+            .HasPrincipalKey(o => o.Id)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // IsEnabled
         builder.Entity<Client>()

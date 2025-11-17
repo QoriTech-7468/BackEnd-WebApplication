@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Rutana.API.CRM.Domain.Model.Aggregates;
 using Rutana.API.CRM.Domain.Repositories;
+using Rutana.API.Shared.Domain.Model.ValueObjects;
 using Rutana.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 using Rutana.API.Shared.Infrastructure.Persistence.EFC.Repositories;
 
@@ -15,15 +16,19 @@ public class ClientRepository(AppDbContext context) : BaseRepository<Client>(con
     /// <inheritdoc />
     public async Task<IEnumerable<Client>> FindByOrganizationIdAsync(int organizationId)
     {
+        // OrganizationId has HasConversion - must compare the value object directly, not .Value
+        var orgId = new OrganizationId(organizationId);
         return await Context.Set<Client>()
-            .Where(c => c.OrganizationId.Value == organizationId)
+            .Where(c => c.OrganizationId == orgId)
             .ToListAsync();
     }
 
     /// <inheritdoc />
     public async Task<bool> ExistsByCompanyNameAndOrganizationIdAsync(string companyName, int organizationId)
     {
+        // OrganizationId has HasConversion - must compare the value object directly, not .Value
+        var orgId = new OrganizationId(organizationId);
         return await Context.Set<Client>()
-            .AnyAsync(c => c.CompanyName.Value == companyName && c.OrganizationId.Value == organizationId);
+            .AnyAsync(c => c.CompanyName.Value == companyName && c.OrganizationId == orgId);
     }
 }

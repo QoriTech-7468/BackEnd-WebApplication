@@ -1,5 +1,6 @@
 using Rutana.API.CRM.Domain.Model.Commands;
 using Rutana.API.CRM.Domain.Model.ValueObjects;
+using Rutana.API.Shared.Domain.Model.ValueObjects;
 
 namespace Rutana.API.CRM.Domain.Model.Aggregates;
 
@@ -15,7 +16,7 @@ public class Client
     public Client()
     {
         CompanyName = new CompanyName();
-        OrganizationId = new OrganizationId();
+        OrganizationId = new OrganizationId(0);
         IsEnabled = true;
     }
 
