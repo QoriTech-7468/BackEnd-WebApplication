@@ -18,7 +18,7 @@ public static class ClientWithLocationsResourceAssembler
     {
         var locationResources = locations.Select(location => 
             new LocationResource(
-                location.Id,
+                location.Id.Value,
                 location.Name.Value,
                 location.Proximity.ToString(),
                 location.IsEnabled,

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Rutana.API.CRM.Domain.Model.Aggregates;
+using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.Shared.Domain.Model.ValueObjects;
 using Rutana.API.Suscriptions.Domain.Model.Aggregates;
 
@@ -61,7 +62,12 @@ public static class ModelBuilderExtensions
         // Location Aggregate Configuration
         // ===========================
         builder.Entity<Location>().HasKey(l => l.Id);
-        builder.Entity<Location>().Property(l => l.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<Location>().Property(l => l.Id)
+            .IsRequired()
+            .HasConversion(
+                id => id.Value,
+                value => new LocationId(value))
+            .ValueGeneratedOnAdd();
 
         // LocationName as Owned Type
         builder.Entity<Location>().OwnsOne(l => l.Name, ln =>

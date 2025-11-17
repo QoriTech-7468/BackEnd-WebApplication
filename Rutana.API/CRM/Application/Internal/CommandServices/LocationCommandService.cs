@@ -1,5 +1,6 @@
 using Rutana.API.CRM.Domain.Model.Aggregates;
 using Rutana.API.CRM.Domain.Model.Commands;
+using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.CRM.Domain.Repositories;
 using Rutana.API.CRM.Domain.Services;
 using Rutana.API.Shared.Domain.Repositories;
@@ -36,7 +37,7 @@ public class LocationCommandService(
     /// <inheritdoc />
     public async Task<Location?> Handle(EnableLocationCommand command)
     {
-        var location = await locationRepository.FindByIdAsync(command.LocationId);
+        var location = await locationRepository.FindByIdAsync(command.LocationId.Value);
         if (location is null)
             return null;
 
@@ -49,7 +50,7 @@ public class LocationCommandService(
     /// <inheritdoc />
     public async Task<Location?> Handle(DisableLocationCommand command)
     {
-        var location = await locationRepository.FindByIdAsync(command.LocationId);
+        var location = await locationRepository.FindByIdAsync(command.LocationId.Value);
         if (location is null)
             return null;
 

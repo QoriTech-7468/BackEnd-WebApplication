@@ -2,6 +2,7 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
 using Rutana.API.CRM.Domain.Model.Commands;
 using Rutana.API.CRM.Domain.Model.Queries;
+using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.CRM.Domain.Services;
 using Rutana.API.CRM.Interfaces.REST.Resources;
 using Rutana.API.CRM.Interfaces.REST.Transform;
@@ -38,12 +39,14 @@ public class LocationsController(
     [SwaggerResponse(StatusCodes.Status404NotFound, "The location was not found")]
     public async Task<IActionResult> GetLocationById(int locationId)
     {
-        var getLocationByIdQuery = new GetLocationByIdQuery(locationId);
+        var locationIdVo = new LocationId(locationId);
+        var getLocationByIdQuery = new GetLocationByIdQuery(locationIdVo);
         var location = await locationQueryService.Handle(getLocationByIdQuery);
         if (location is null) return NotFound();
 
         // Get client info for the location
-        var getClientByIdQuery = new GetClientByIdQuery(location.ClientId.Value);
+        var clientIdVo = new ClientId(location.ClientId.Value);
+        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
         var client = await clientQueryService.Handle(getClientByIdQuery);
         if (client is null) return NotFound();
 
@@ -66,11 +69,12 @@ public class LocationsController(
     public async Task<IActionResult> GetLocationsByClientId(int clientId)
     {
         // Verify client exists
-        var getClientByIdQuery = new GetClientByIdQuery(clientId);
+        var clientIdVo = new ClientId(clientId);
+        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
         var client = await clientQueryService.Handle(getClientByIdQuery);
         if (client is null) return NotFound();
 
-        var getLocationsByClientIdQuery = new GetLocationsByClientIdQuery(clientId);
+        var getLocationsByClientIdQuery = new GetLocationsByClientIdQuery(clientIdVo);
         var locations = await locationQueryService.Handle(getLocationsByClientIdQuery);
         var resources = locations.Select(location => 
             LocationResourceFromEntityAssembler.ToResourceFromEntity(location, client));
@@ -96,12 +100,13 @@ public class LocationsController(
         if (location is null) return BadRequest();
 
         // Get client info for the response
-        var getClientByIdQuery = new GetClientByIdQuery(location.ClientId.Value);
+        var clientIdVo = new ClientId(location.ClientId.Value);
+        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
         var client = await clientQueryService.Handle(getClientByIdQuery);
         if (client is null) return BadRequest();
 
         var locationResource = LocationResourceFromEntityAssembler.ToResourceFromEntity(location, client);
-        return CreatedAtAction(nameof(GetLocationById), new { locationId = location.Id }, locationResource);
+        return CreatedAtAction(nameof(GetLocationById), new { locationId = location.Id.Value }, locationResource);
     }
 
     /// <summary>
@@ -118,12 +123,14 @@ public class LocationsController(
     [SwaggerResponse(StatusCodes.Status404NotFound, "The location was not found")]
     public async Task<IActionResult> EnableLocation(int locationId)
     {
-        var enableLocationCommand = new EnableLocationCommand(locationId);
+        var locationIdVo = new LocationId(locationId);
+        var enableLocationCommand = new EnableLocationCommand(locationIdVo);
         var location = await locationCommandService.Handle(enableLocationCommand);
         if (location is null) return NotFound();
 
         // Get client info for the response
-        var getClientByIdQuery = new GetClientByIdQuery(location.ClientId.Value);
+        var clientIdVo = new ClientId(location.ClientId.Value);
+        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
         var client = await clientQueryService.Handle(getClientByIdQuery);
         if (client is null) return NotFound();
 
@@ -145,12 +152,14 @@ public class LocationsController(
     [SwaggerResponse(StatusCodes.Status404NotFound, "The location was not found")]
     public async Task<IActionResult> DisableLocation(int locationId)
     {
-        var disableLocationCommand = new DisableLocationCommand(locationId);
+        var locationIdVo = new LocationId(locationId);
+        var disableLocationCommand = new DisableLocationCommand(locationIdVo);
         var location = await locationCommandService.Handle(disableLocationCommand);
         if (location is null) return NotFound();
 
         // Get client info for the response
-        var getClientByIdQuery = new GetClientByIdQuery(location.ClientId.Value);
+        var clientIdVo = new ClientId(location.ClientId.Value);
+        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
         var client = await clientQueryService.Handle(getClientByIdQuery);
         if (client is null) return NotFound();
 

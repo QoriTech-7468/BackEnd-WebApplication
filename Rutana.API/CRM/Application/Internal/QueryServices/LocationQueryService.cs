@@ -21,6 +21,6 @@ public class LocationQueryService(ILocationRepository locationRepository) : ILoc
     /// <inheritdoc />
     public async Task<Location?> Handle(GetLocationByIdQuery query)
     {
-        return await locationRepository.FindByIdAsync(query.LocationId);
+        return await locationRepository.FindByIdAsync(query.LocationId.Value);
     }
 }

@@ -17,7 +17,7 @@ public static class LocationResourceFromEntityAssembler
     public static LocationResource ToResourceFromEntity(Location location, Client client)
     {
         return new LocationResource(
-            location.Id,
+            location.Id.Value,
             location.Name.Value,
             location.Proximity.ToString(),
             location.IsEnabled,
