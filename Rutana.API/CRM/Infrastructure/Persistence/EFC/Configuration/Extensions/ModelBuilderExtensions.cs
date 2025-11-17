@@ -69,13 +69,13 @@ public static class ModelBuilderExtensions
         });
 
         // ClientId as Owned Type
-        builder.Entity<Location>().OwnsOne(l => l.ClientId, ci =>
-        {
-            ci.WithOwner().HasForeignKey("Id");
-            ci.Property(client => client.Value)
-                .HasColumnName("ClientId")
-                .IsRequired();
-        });
+        builder.Entity<Location>()   
+            .Property(l => l.ClientId)
+            .HasConversion(
+                id => id.Value,
+                value => new ClientId(value))
+            .HasColumnName("ClientId")
+            .IsRequired();
 
         // Proximity as string enum
         builder.Entity<Location>()
@@ -86,8 +86,10 @@ public static class ModelBuilderExtensions
 
         // IsEnabled
         builder.Entity<Location>()
-            .Property(l => l.IsEnabled)
-            .IsRequired();
+            .HasOne<Client>()
+            .WithMany()
+            .HasForeignKey(l => l.ClientId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Note: Indexes will be added via migration if needed
         // Avoiding index creation on Owned Types to prevent EF Core issues
