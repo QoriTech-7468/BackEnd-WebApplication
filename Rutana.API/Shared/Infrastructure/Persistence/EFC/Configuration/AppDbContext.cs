@@ -2,7 +2,7 @@ using EntityFrameworkCore.CreatedUpdatedDate.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Rutana.API.Fleet.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using Rutana.API.Suscriptions.Infrastructure.Persistence.EFC.Configuration.Extensions;
-
+using Rutana.API.CRM.Infrastructure.Persistence.EFC.Configuration.Extensions;
 namespace Rutana.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 
 /// <summary>
@@ -36,6 +36,9 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         // Subscriptions Context
         builder.ApplySubscriptionsConfiguration();
 
+
+        // CRM Context
+        builder.ApplyCRMConfiguration();
         // Use snake case for database objects and pluralization for table names
         builder.UseSnakeCaseNamingConvention();
     }
