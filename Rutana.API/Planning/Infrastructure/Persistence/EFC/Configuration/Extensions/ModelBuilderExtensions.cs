@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Rutana.API.CRM.Domain.Model.Aggregates;
-using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.Fleet.Domain.Model.Aggregates;
 using Rutana.API.Fleet.Domain.Model.ValueObjects;
 using Rutana.API.Planning.Domain.Model.Entities;
@@ -74,16 +73,11 @@ public static class ModelBuilderExtensions
         // Relationships
         routeDraft.HasOne<Organization>()
             .WithMany()
-            .HasForeignKey(rd => rd.OrganizationId)
-            .HasPrincipalKey(o => o.Id)
+            .HasForeignKey("OrganizationId")
             .OnDelete(DeleteBehavior.Restrict);
 
-        routeDraft.HasOne<Vehicle>()
-            .WithMany()
-            .HasForeignKey(rd => rd.VehicleId)
-            .HasPrincipalKey(v => v.Id)
-            .OnDelete(DeleteBehavior.Restrict)
-            .IsRequired(false);
+        // NO relationship with Vehicle - cross-bounded-context FK constraint
+        // VehicleId is stored but without FK constraint for bounded context independence
 
         // Collection navigation - Deliveries
         routeDraft.HasMany(rd => rd.Deliveries)
@@ -123,7 +117,7 @@ public static class ModelBuilderExtensions
             .IsRequired()
             .HasMaxLength(7);
 
-        // VehicleId as property with conversion
+        // VehicleId as property with conversion (NOT nullable)
         route.Property(r => r.VehicleId)
             .HasConversion(
                 id => id.Value,
@@ -149,15 +143,11 @@ public static class ModelBuilderExtensions
         // Relationships
         route.HasOne<Organization>()
             .WithMany()
-            .HasForeignKey(r => r.OrganizationId)
-            .HasPrincipalKey(o => o.Id)
+            .HasForeignKey("OrganizationId")
             .OnDelete(DeleteBehavior.Restrict);
 
-        route.HasOne<Vehicle>()
-            .WithMany()
-            .HasForeignKey(r => r.VehicleId)
-            .HasPrincipalKey(v => v.Id)
-            .OnDelete(DeleteBehavior.Restrict);
+        // NO relationship with Vehicle - cross-bounded-context FK constraint
+        // VehicleId is stored but without FK constraint for bounded context independence
 
         // Collection navigation - Deliveries
         route.HasMany(r => r.Deliveries)
@@ -178,10 +168,11 @@ public static class ModelBuilderExtensions
 
         delivery.HasKey(d => d.Id);
 
-        // DeliveryId as owned type
-        var deliveryId = delivery.OwnsOne(d => d.Id);
-        deliveryId.WithOwner().HasForeignKey("Id");
-        deliveryId.Property(di => di.Value)
+        // DeliveryId as property with conversion (NOT OwnsOne)
+        delivery.Property(d => d.Id)
+            .HasConversion(
+                id => id.Value,
+                value => new DeliveryId(value))
             .HasColumnName("Id")
             .IsRequired()
             .ValueGeneratedOnAdd();
@@ -190,7 +181,7 @@ public static class ModelBuilderExtensions
         delivery.Property(d => d.LocationId)
             .HasConversion(
                 id => id.Value,
-                value => new LocationId(value))
+                value => new CRM.Domain.Model.ValueObjects.LocationId(value))
             .HasColumnName("LocationId")
             .IsRequired();
 
@@ -215,12 +206,8 @@ public static class ModelBuilderExtensions
             .IsRequired(false)
             .HasMaxLength(500);
 
-        // Relationship with Location
-        delivery.HasOne<Location>()
-            .WithMany()
-            .HasForeignKey(d => d.LocationId)
-            .HasPrincipalKey(l => l.Id)
-            .OnDelete(DeleteBehavior.Restrict);
+        // NO relationship with Location - cross-bounded-context references should be by ID only
+        // The LocationId is stored but there's no navigation property or FK constraint
     }
 
     private static void ConfigureRouteTeamMember(ModelBuilder builder)
@@ -229,10 +216,11 @@ public static class ModelBuilderExtensions
 
         teamMember.HasKey(tm => tm.Id);
 
-        // RouteTeamMemberId as owned type
-        var teamMemberId = teamMember.OwnsOne(tm => tm.Id);
-        teamMemberId.WithOwner().HasForeignKey("Id");
-        teamMemberId.Property(tmi => tmi.Value)
+        // RouteTeamMemberId as property with conversion (NOT OwnsOne)
+        teamMember.Property(tm => tm.Id)
+            .HasConversion(
+                id => id.Value,
+                value => new RouteTeamMemberId(value))
             .HasColumnName("Id")
             .IsRequired()
             .ValueGeneratedOnAdd();
