@@ -1,0 +1,151 @@
+@startuml
+
+' ===========================
+' DOMAIN
+' ===========================
+package "Subscriptions.Domain" {
+
+  class OrganizationAudit <<partial>> {
+    - CreatedAt : DateTime
+    - UpdatedAt : DateTime
+  }
+
+  class Organization <<aggregateRoot>> {
+    - Id : OrganizationId
+    - Name : OrganizationName
+    - Ruc : Ruc
+    - Audit : OrganizationAudit
+
+    + Create(cmd : CreateOrganization) : Organization
+  }
+
+  class OrganizationId {
+    - Value : int
+  }
+
+  class OrganizationName {
+    - Value : string
+  }
+
+  class Ruc {
+    - Value : string
+  }
+
+  class CreateOrganization {
+    + Name : string
+    + Ruc : string
+  }
+
+  class GetOrganizationById {
+    + Id : int
+  }
+
+  interface IOrganizationRepository {
+    + FindByIdAsync(id : OrganizationId) : Organization
+    + ExistsByRucAsync(ruc : Ruc) : bool
+    + SaveAsync(organization : Organization) : void
+  }
+
+  interface IOrganizationCommandService {
+    + Handle(command : CreateOrganization) : void
+  }
+
+  interface IOrganizationQueryService {
+    + Handle(query : GetOrganizationById) : Organization
+  }
+
+  Organization *-- OrganizationAudit
+  Organization o-- OrganizationId
+  Organization o-- OrganizationName
+  Organization o-- Ruc
+}
+
+' ===========================
+' APPLICATION
+' ===========================
+package "Subscriptions.Application" {
+
+  class OrganizationCommandService {
+    - repository : IOrganizationRepository
+
+    + Handle(command : CreateOrganization) : void
+  }
+
+  class OrganizationQueryService {
+    - repository : IOrganizationRepository
+
+    + Handle(query : GetOrganizationById) : Organization
+  }
+
+  OrganizationCommandService ..|> IOrganizationCommandService
+  OrganizationQueryService ..|> IOrganizationQueryService
+
+  OrganizationCommandService --> IOrganizationRepository
+  OrganizationCommandService --> CreateOrganization
+
+  OrganizationQueryService --> IOrganizationRepository
+  OrganizationQueryService --> GetOrganizationById
+}
+
+' ===========================
+' INFRASTRUCTURE
+' ===========================
+package "Subscriptions.Infrastructure" {
+
+  class OrganizationRepository {
+    + FindByIdAsync(id : OrganizationId) : Organization
+    + ExistsByRucAsync(ruc : Ruc) : bool
+    + SaveAsync(organization : Organization) : void
+  }
+
+  OrganizationRepository ..|> IOrganizationRepository
+  OrganizationRepository --> Organization
+  OrganizationRepository --> OrganizationId
+  OrganizationRepository --> Ruc
+}
+
+' ===========================
+' INTERFACES
+' ===========================
+package "Subscriptions.Interfaces.REST" {
+
+  class OrganizationController {
+    - organizationQueryService : IOrganizationQueryService
+    - organizationCommandService : IOrganizationCommandService
+
+    + GetOrganizationById(id : int) : IActionResult
+    + CreateOrganization(resource : CreateOrganizationResource) : IActionResult
+  }
+
+  class OrganizationResource {
+    + Id : int
+    + Name : string
+    + Ruc : string
+  }
+
+  class CreateOrganizationResource {
+    + Name : string
+    + Ruc : string
+  }
+
+  class OrganizationResourceFromEntityAssembler {
+    + ToResourceFromEntity(organization : Organization) : OrganizationResource
+  }
+
+  class CreateOrganizationCommandFromResourceAssembler {
+    + ToCommandFromResource(resource : CreateOrganizationResource) : CreateOrganization
+  }
+
+  OrganizationController ..> IOrganizationQueryService
+  OrganizationController ..> IOrganizationCommandService
+  OrganizationController ..> OrganizationResourceFromEntityAssembler
+  OrganizationController ..> CreateOrganizationCommandFromResourceAssembler
+
+  OrganizationResourceFromEntityAssembler ..> Organization
+  OrganizationResourceFromEntityAssembler ..> OrganizationResource
+
+  CreateOrganizationCommandFromResourceAssembler ..> CreateOrganizationResource
+  CreateOrganizationCommandFromResourceAssembler ..> CreateOrganization
+}
+
+@enduml

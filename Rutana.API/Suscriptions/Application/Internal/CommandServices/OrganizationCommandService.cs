@@ -1,0 +1,64 @@
+using Rutana.API.Shared.Domain.Model.ValueObjects;
+using Rutana.API.Shared.Domain.Repositories;
+using Rutana.API.Suscriptions.Domain.Model.Aggregates;
+using Rutana.API.Suscriptions.Domain.Model.Commands;
+using Rutana.API.Suscriptions.Domain.Model.ValueObjects;
+using Rutana.API.Suscriptions.Domain.Repositories;
+using Rutana.API.Suscriptions.Domain.Services;
+
+namespace Rutana.API.Suscriptions.Application.Internal.CommandServices;
+
+/// <summary>
+///     Application-level command service for the <see cref="Organization" /> aggregate.
+/// </summary>
+/// <param name="organizationRepository">
+///     The <see cref="IOrganizationRepository" /> used to persist <see cref="Organization" /> instances.
+/// </param>
+/// <param name="unitOfWork">
+///     The <see cref="IUnitOfWork" /> abstraction used to commit the changes as a single transaction.
+/// </param>
+public class OrganizationCommandService(IOrganizationRepository organizationRepository, IUnitOfWork unitOfWork)
+    : IOrganizationCommandService
+{
+    /// <summary>
+    ///     Handles the <see cref="CreateOrganizationCommand" /> by validating business rules,
+    ///     creating a new <see cref="Organization" /> aggregate and committing the transaction
+    ///     through the <see cref="IUnitOfWork" />.
+    /// </summary>
+    /// <param name="command">
+    ///     The <see cref="CreateOrganizationCommand" /> containing the data required to create the organization.
+    /// </param>
+    /// <returns>
+    ///     The created <see cref="Organization" /> if successful; otherwise, null.
+    /// </returns>
+    public async Task<Organization?> Handle(CreateOrganizationCommand command)
+    {
+        try
+        {
+            // Check uniqueness by RUC at the domain/application level
+            var ruc = Ruc.From(command.Ruc);
+            if (await organizationRepository.ExistsByRucAsync(ruc))
+            {
+                // In a more complete implementation, this could be a domain-specific exception type.
+                return null;
+            }
+
+            // Create the new organization
+            var organization = Organization.Create(command);
+
+            await organizationRepository.AddAsync(organization);
+            await unitOfWork.CompleteAsync();
+
+            // After saving, retrieve the organization with the generated Id
+            return await organizationRepository.FindByRucAsync(ruc);
+        }
+        catch (Exception e)
+        {
+            // Log error
+            Console.WriteLine(e);
+            return null;
+        }
+    }
+}
+
+
