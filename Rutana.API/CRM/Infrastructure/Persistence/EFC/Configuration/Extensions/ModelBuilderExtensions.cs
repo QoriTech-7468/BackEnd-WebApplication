@@ -79,7 +79,7 @@ public static class ModelBuilderExtensions
                 .HasMaxLength(200);
         });
 
-        // ClientId as Owned Type
+        // ClientId as property with conversion
         builder.Entity<Location>()   
             .Property(l => l.ClientId)
             .HasConversion(
@@ -95,7 +95,12 @@ public static class ModelBuilderExtensions
             .IsRequired()
             .HasMaxLength(20);
 
-        // IsEnabled
+        // IsEnabled property
+        builder.Entity<Location>()
+            .Property(l => l.IsEnabled)
+            .IsRequired();
+
+        // Relationship with Client
         builder.Entity<Location>()
             .HasOne<Client>()
             .WithMany()

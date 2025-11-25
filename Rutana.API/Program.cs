@@ -1,5 +1,6 @@
 using Rutana.API.Fleet.Infrastructure.Interfaces.ASP.Configuration.Extensions;
 using Rutana.API.CRM.Infrastructure.Interfaces.ASP.Configuration.Extensions;
+using Rutana.API.Planning.Infrastructure.Interfaces.ASP.Configuration.Extensions;
 using Rutana.API.Shared.Infrastructure.Documentation.OpenApi.Configuration.Extensions;
 using Rutana.API.Shared.Infrastructure.Interfaces.ASP.Configuration;
 using Rutana.API.Shared.Infrastructure.Interfaces.ASP.Configuration.Extensions;
@@ -23,6 +24,7 @@ builder.AddSharedContextServices();
 builder.AddFleetContextServices();
 builder.AddSubscriptionsContextServices();
 builder.AddCRMContextServices();
+builder.AddPlanningContextServices();
 
 // Mediator Configuration
 builder.AddCortexConfigurationServices();
