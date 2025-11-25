@@ -1,8 +1,10 @@
+using Rutana.API.Planning.Application.ACL.Services;
 using Rutana.API.Planning.Application.Internal.CommandServices;
 using Rutana.API.Planning.Application.Internal.QueryServices;
 using Rutana.API.Planning.Domain.Repositories;
 using Rutana.API.Planning.Domain.Services;
 using Rutana.API.Planning.Infrastructure.Persistence.EFC.Repositories;
+using Rutana.API.Planning.Interfaces.ACL;
 
 namespace Rutana.API.Planning.Infrastructure.Interfaces.ASP.Configuration.Extensions;
 
@@ -24,5 +26,11 @@ public static class WebApplicationBuilderExtensions
         // Planning Bounded Context - Services
         builder.Services.AddScoped<IRouteCommandService, RouteCommandService>();
         builder.Services.AddScoped<IRouteQueryService, RouteQueryService>();
+
+        // Planning Bounded Context - ACL (Anti-Corruption Layer)
+        builder.Services.AddScoped<IFleetContextFacade, FleetContextFacade>();
+        builder.Services.AddScoped<ICrmContextFacade, CrmContextFacade>();
+        // TODO: Add IAM context facade when IAM bounded context is implemented
+        // builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
     }
 }
