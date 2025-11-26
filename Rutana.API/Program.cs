@@ -9,7 +9,7 @@ using Rutana.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 using Rutana.API.Shared.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using Rutana.API.Suscriptions.Infrastructure.Interfaces.ASP.Configuration.Extensions;
 
-using Rutana.API.IAM.Interfaces.ASP.Configuration.Extensions;
+using Rutana.API.IAM.Infrastructure.Interfaces.ASP.Configuration.Extensions;
 using Rutana.API.IAM.Infrastructure.Pipeline.Middleware.Extensions; 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,15 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers(options => options.Conventions.Add(new KebabCaseRouteNamingConvention()));
 
-// BASE DE DATOS A "IN-MEMORY" (Para probar sin MySQL)
-// Comentamos la línea original que busca MySQL:
-// builder.AddDatabaseServices(); 
-
-// Agregamos la base de datos temporal:
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("RutanaTestDB")
-);
-
+builder.AddDatabaseServices(); 
+ 
 // Open API Configuration
 builder.AddOpenApiDocumentationServices();
 
@@ -42,6 +35,7 @@ builder.AddIamContextServices();
 builder.AddCortexConfigurationServices();
 
 var app = builder.Build();
+
 
 // Verify if the database exists and create it if it doesn't
 app.UseDatabaseCreationAssurance();
