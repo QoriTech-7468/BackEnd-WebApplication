@@ -3,9 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Rutana.API.Fleet.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using Rutana.API.Suscriptions.Infrastructure.Persistence.EFC.Configuration.Extensions;
 using Rutana.API.CRM.Infrastructure.Persistence.EFC.Configuration.Extensions;
-// 1. NUEVOS USINGS PARA IAM
 using Rutana.API.IAM.Domain.Model.Aggregates;
 using Rutana.API.IAM.Infrastructure.Persistance.EFC.Configuration.Extensions;
+using Rutana.API.Planning.Infrastructure.Persistence.EFC.Configuration.Extensions;
+
 
 namespace Rutana.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 
@@ -46,9 +47,14 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         // IAM Context
         builder.ApplyIamConfiguration();
 
+        // Planning Context
+        builder.ApplyPlanningConfiguration();
+
+
         // Use snake case for database objects and pluralization for table names
         builder.UseSnakeCaseNamingConvention();
     }
+
 
     // 3. NUEVO: La tabla de usuarios
     public DbSet<User> Users { get; set; }
