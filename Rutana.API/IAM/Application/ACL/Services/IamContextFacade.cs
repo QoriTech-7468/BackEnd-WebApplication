@@ -5,13 +5,14 @@ using Rutana.API.IAM.Interfaces.ACL;
 
 namespace Rutana.API.IAM.Application.ACL.Services;
 
-public class IamContextFacade(IUserCommandService userCommandService, IUserQueryService userQueryService)
-    : IIamContextFacade
+public class IamContextFacade(IUserCommandService userCommandService, IUserQueryService userQueryService) : IIamContextFacade
 {
-    // Creamos usuario 
-    public async Task<int> CreateUser(string name, string surname, string phone, string email, string password)
+    // ACTUALIZADO: Recibe los nuevos parámetros
+    public async Task<int> CreateUser(string name, string surname, string phone, string email, string password, string role, int organizationId)
     {
-        var signUpCommand = new SignUpCommand(name, surname, phone, email, password);
+        // ACTUALIZADO: Se los pasa al SignUpCommand
+        var signUpCommand = new SignUpCommand(name, surname, phone, email, password, role, organizationId);
+        
         await userCommandService.Handle(signUpCommand);
         
         var getUserByUsernameQuery = new GetUserByUsernameQuery(email);

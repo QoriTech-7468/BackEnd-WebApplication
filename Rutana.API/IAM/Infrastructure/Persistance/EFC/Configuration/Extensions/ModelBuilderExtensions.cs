@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Rutana.API.IAM.Domain.Model.Aggregates;
+using Rutana.API.Suscriptions.Domain.Model.Aggregates;
+using Rutana.API.Shared.Domain.Model.ValueObjects;
 
-namespace Rutana.API.IAM.Infrastructure.Persistence.EFC.Configuration.Extensions;
+namespace Rutana.API.IAM.Infrastructure.Persistance.EFC.Configuration.Extensions;
 
 public static class ModelBuilderExtensions
 {
@@ -24,5 +26,22 @@ public static class ModelBuilderExtensions
         builder.Entity<User>().Property(u => u.Phone).HasMaxLength(20);
         
         builder.Entity<User>().Property(u => u.PasswordHash).IsRequired();
+        
+        builder.Entity<User>().Property(u=>u.Role).IsRequired();
+        
+        builder.Entity<User>()
+            .Property(u => u.OrganizationId)
+            .HasConversion(
+                id => id.Value,
+                value => new OrganizationId(value))
+            .HasColumnName("OrganizationId")
+            .IsRequired();
+
+        builder.Entity<User>()
+            .HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(u => u.OrganizationId)
+            .HasPrincipalKey(o => o.Id)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

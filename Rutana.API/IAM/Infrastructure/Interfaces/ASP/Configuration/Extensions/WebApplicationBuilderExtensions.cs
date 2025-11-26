@@ -10,7 +10,7 @@ using Rutana.API.IAM.Infrastructure.Tokens.JWT.Configuration;
 using Rutana.API.IAM.Infrastructure.Tokens.JWT.Services;
 using Rutana.API.IAM.Interfaces.ACL;
 
-namespace Rutana.API.IAM.Interfaces.ASP.Configuration.Extensions;
+namespace Rutana.API.IAM.Infrastructure.Interfaces.ASP.Configuration.Extensions;
 
 public static class WebApplicationBuilderExtensions
 {
