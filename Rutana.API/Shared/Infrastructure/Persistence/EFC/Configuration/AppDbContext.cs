@@ -5,7 +5,7 @@ using Rutana.API.Suscriptions.Infrastructure.Persistence.EFC.Configuration.Exten
 using Rutana.API.CRM.Infrastructure.Persistence.EFC.Configuration.Extensions;
 // 1. NUEVOS USINGS PARA IAM
 using Rutana.API.IAM.Domain.Model.Aggregates;
-using Rutana.API.IAM.Infrastructure.Persistence.EFC.Configuration.Extensions;
+using Rutana.API.IAM.Infrastructure.Persistance.EFC.Configuration.Extensions;
 
 namespace Rutana.API.Shared.Infrastructure.Persistence.EFC.Configuration;
 
@@ -43,7 +43,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         // CRM Context
         builder.ApplyCRMConfiguration();
 
-        // 2. NUEVO: IAM Context (Aquí conectamos la configuración de Usuarios)
+        // IAM Context
         builder.ApplyIamConfiguration();
 
         // Use snake case for database objects and pluralization for table names

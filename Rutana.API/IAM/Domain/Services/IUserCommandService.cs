@@ -25,5 +25,5 @@ public interface IUserCommandService
     /// </summary>
     /// <param name="command">The sign-up command with new user data.</param>
     /// <returns>A <see cref="Task" /> that completes when the operation finishes.</returns>
-    Task Handle(SignUpCommand command);
+    Task <User>Handle(SignUpCommand command);
 }

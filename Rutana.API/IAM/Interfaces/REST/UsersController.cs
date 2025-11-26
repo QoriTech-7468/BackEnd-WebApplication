@@ -14,8 +14,20 @@ namespace Rutana.API.IAM.Interfaces.REST;
 [Route("api/v1/[controller]")]
 [Produces(MediaTypeNames.Application.Json)]
 [SwaggerTag("Available User endpoints")]
-public class UsersController(IUserQueryService userQueryService) : ControllerBase
+public class UsersController: ControllerBase
 {
+    private readonly IUserQueryService userQueryService;
+    private readonly IUserCommandService userCommandService;
+    
+    public UsersController(
+        IUserQueryService userQueryService,
+        IUserCommandService userCommandService)
+    {
+        this.userQueryService = userQueryService;
+        this.userCommandService = userCommandService;
+    }
+    
+    [AllowAnonymous]
     [HttpGet("{id}")]
     [SwaggerOperation(Summary = "Get user by id", Description = "Get a user by its identifier", OperationId = "GetUserById")]
     [SwaggerResponse(StatusCodes.Status200OK, "The user was found", typeof(UserResource))]
@@ -28,7 +40,7 @@ public class UsersController(IUserQueryService userQueryService) : ControllerBas
         var userResource = UserResourceFromEntityAssembler.ToResourceFromEntity(user);
         return Ok(userResource);
     }
-
+    [AllowAnonymous]
     [HttpGet]
     [SwaggerOperation(Summary = "Get all users", Description = "Get all users", OperationId = "GetAllUsers")]
     [SwaggerResponse(StatusCodes.Status200OK, "The users were found", typeof(IEnumerable<UserResource>))]
@@ -38,5 +50,19 @@ public class UsersController(IUserQueryService userQueryService) : ControllerBas
         var users = await userQueryService.Handle(getAllUsersQuery);
         var userResources = users.Select(UserResourceFromEntityAssembler.ToResourceFromEntity);
         return Ok(userResources);
+    }
+    [AllowAnonymous]
+    [HttpPost] 
+    [SwaggerOperation(Summary = "Create a new user", Description = "Create a new user", OperationId = "CreateUser")]
+    [SwaggerResponse(StatusCodes.Status201Created, "The user was created", typeof(UserResource))]
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserResource resource)
+    {
+        var command = CreateUserCommandFromResourceAssembler.ToCommandFromResource(resource);
+
+        var user = await userCommandService.Handle(command);
+
+        var userResource = UserResourceFromEntityAssembler.ToResourceFromEntity(user);
+
+        return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, userResource);
     }
 }
