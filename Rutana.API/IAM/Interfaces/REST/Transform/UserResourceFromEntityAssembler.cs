@@ -14,7 +14,7 @@ public static class UserResourceFromEntityAssembler
             entity.Phone, 
             entity.Email,
             entity.Role.ToString(),           
-            entity.OrganizationId?.Value ?? 0  
+            entity.OrganizationId?.Value  
         );
     }
 }
