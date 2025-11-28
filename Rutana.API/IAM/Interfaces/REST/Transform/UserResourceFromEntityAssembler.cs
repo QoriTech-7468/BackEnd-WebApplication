@@ -13,8 +13,8 @@ public static class UserResourceFromEntityAssembler
             entity.Surname, 
             entity.Phone, 
             entity.Email,
-            entity.Role,           
-            entity.OrganizationId.Value  
+            entity.Role.ToString(),           
+            entity.OrganizationId?.Value  
         );
     }
 }

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Rutana.API.IAM.Domain.Model.Enums;
 using Rutana.API.Shared.Domain.Model.ValueObjects;
 
 namespace Rutana.API.IAM.Domain.Model.Aggregates;
@@ -16,8 +17,8 @@ public class User(
     string phone,
     string email,
     string passwordHash,
-    string role,
-    OrganizationId organizationId)
+    UserRole role,
+    OrganizationId? organizationId)
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="User" /> class with empty values.
@@ -28,8 +29,8 @@ public class User(
         string.Empty,
         string.Empty,
         string.Empty,
-        string.Empty,
-        new OrganizationId(0))
+        UserRole.NotAssigned,
+        null)
     {
     }
 
@@ -61,12 +62,12 @@ public class User(
     /// <summary>
     ///     Gets the role of the user in the organization.
     /// </summary>
-    public string Role { get; private set; } = role;
+    public UserRole Role { get; private set; } = role;
 
     /// <summary>
     ///     Gets the organization the user is a part of.
     /// </summary>
-    public OrganizationId OrganizationId { get; private set; } = organizationId;
+    public OrganizationId? OrganizationId { get; private set; } = organizationId;
 
     /// <summary>
     ///     Gets the password hash. This property is ignored for JSON serialization.
@@ -93,6 +94,19 @@ public class User(
     public User UpdatePasswordHash(string passwordHash)
     {
         PasswordHash = passwordHash;
+        return this;
+    }
+
+    /// <summary>
+    ///     Updates the user's organization and role (used when accepting an invitation).
+    /// </summary>
+    /// <param name="organizationId">The organization identifier.</param>
+    /// <param name="role">The new role.</param>
+    /// <returns>The updated <see cref="User" /> instance.</returns>
+    public User UpdateOrganizationAndRole(OrganizationId organizationId, UserRole role)
+    {
+        OrganizationId = organizationId;
+        Role = role;
         return this;
     }
 }

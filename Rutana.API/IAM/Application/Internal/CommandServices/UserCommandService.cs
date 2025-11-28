@@ -39,6 +39,10 @@ public class UserCommandService(
         var hashedPassword = hashingService.HashPassword(command.Password);
 
         // 3. Crear Usuario 
+        var organizationId = command.OrganizationId.HasValue 
+            ? new OrganizationId(command.OrganizationId.Value) 
+            : null;
+            
         var user = new User(
             command.Name,
             command.Surname,
@@ -46,7 +50,7 @@ public class UserCommandService(
             command.Email,
             hashedPassword,
             command.Role, 
-            new OrganizationId(command.OrganizationId)); 
+            organizationId); 
 
     try
 

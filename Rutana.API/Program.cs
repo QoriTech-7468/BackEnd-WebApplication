@@ -45,6 +45,17 @@ builder.AddPlanningContextServices();
 // Mediator Configuration
 builder.AddCortexConfigurationServices();
 
+// CORS Configuration - Allow all origins (temporary)
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 
@@ -55,6 +66,8 @@ app.UseDatabaseCreationAssurance();
 app.UseOpenApiDocumentation();
 app.UseHttpsRedirection();
 
+// Enable CORS
+app.UseCors();
 
 app.UseRequestAuthorization();
 

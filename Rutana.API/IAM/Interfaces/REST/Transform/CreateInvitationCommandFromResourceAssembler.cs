@@ -4,9 +4,9 @@ using Rutana.API.IAM.Interfaces.REST.Resources;
 
 namespace Rutana.API.IAM.Interfaces.REST.Transform;
 
-public static class CreateUserCommandFromResourceAssembler
+public static class CreateInvitationCommandFromResourceAssembler
 {
-    public static SignUpCommand ToCommandFromResource(CreateUserResource resource)
+    public static CreateInvitationCommand ToCommandFromResource(CreateInvitationResource resource, int organizationId)
     {
         // Parse role from string to enum
         UserRole role = UserRole.NotAssigned;
@@ -15,15 +15,8 @@ public static class CreateUserCommandFromResourceAssembler
         {
             role = parsedRole;
         }
-        
-        return new SignUpCommand(
-            resource.Name,
-            resource.Surname,
-            resource.Phone,
-            resource.Email,
-            resource.Password,
-            role,
-            resource.OrganizationId
-        );
+
+        return new CreateInvitationCommand(organizationId, resource.UserEmail, role);
     }
 }
+

@@ -65,4 +65,17 @@ public class UsersController: ControllerBase
 
         return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, userResource);
     }
+
+    [HttpGet("by-email")]
+    [SwaggerOperation(Summary = "Get user by email", Description = "Get a user by email address", OperationId = "GetUserByEmail")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The user was found", typeof(UserByEmailResource))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "The user was not found")]
+    public async Task<IActionResult> GetUserByEmail([FromQuery] string email)
+    {
+        var getUserByEmailQuery = new GetUserByEmailQuery(email);
+        var user = await userQueryService.Handle(getUserByEmailQuery);
+        if (user == null) return NotFound();
+        var userResource = UserByEmailResourceFromEntityAssembler.ToResourceFromEntity(user);
+        return Ok(userResource);
+    }
 }

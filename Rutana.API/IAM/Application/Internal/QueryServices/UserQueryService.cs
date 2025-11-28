@@ -27,4 +27,9 @@ public class UserQueryService(IUserRepository userRepository) : IUserQueryServic
         //  lista vacía porque no hay roles
         return await Task.FromResult(Enumerable.Empty<User>());
     }
+
+    public async Task<User?> Handle(GetUserByEmailQuery query)
+    {
+        return await userRepository.FindByUsernameAsync(query.Email);
+    }
 }

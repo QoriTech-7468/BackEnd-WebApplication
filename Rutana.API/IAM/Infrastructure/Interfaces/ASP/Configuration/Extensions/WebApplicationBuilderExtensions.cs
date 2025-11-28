@@ -20,10 +20,13 @@ public static class WebApplicationBuilderExtensions
         
         // Repositorios
         builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
 
         // Servicios de Aplicación 
         builder.Services.AddScoped<IUserCommandService, UserCommandService>();
         builder.Services.AddScoped<IUserQueryService, UserQueryService>();
+        builder.Services.AddScoped<IInvitationCommandService, InvitationCommandService>();
+        builder.Services.AddScoped<IInvitationQueryService, InvitationQueryService>();
 
         // Servicios de Infraestructura 
         builder.Services.AddScoped<ITokenService, TokenService>();
