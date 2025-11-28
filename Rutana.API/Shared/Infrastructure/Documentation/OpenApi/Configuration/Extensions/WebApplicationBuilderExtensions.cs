@@ -18,7 +18,7 @@ public static class WebApplicationBuilderExtensions
                     Title = "Rutana.API",
                     Version = "v1",
                     Description = "Rutana Platform API - Sistema de gestión de rutas",
-                    TermsOfService = new Uri("https://rutana.com/tos"),
+                    TermsOfService = new Uri("https://qoritech-7468.github.io/Landing-Page-Repository/TyP/termsofservices.html"),
                     Contact = new OpenApiContact
                     {
                         Name = "Rutana Team",
