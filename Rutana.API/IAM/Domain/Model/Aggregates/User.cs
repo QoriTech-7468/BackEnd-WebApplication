@@ -96,4 +96,17 @@ public class User(
         PasswordHash = passwordHash;
         return this;
     }
+
+    /// <summary>
+    ///     Updates the user's organization and role (used when accepting an invitation).
+    /// </summary>
+    /// <param name="organizationId">The organization identifier.</param>
+    /// <param name="role">The new role.</param>
+    /// <returns>The updated <see cref="User" /> instance.</returns>
+    public User UpdateOrganizationAndRole(OrganizationId organizationId, UserRole role)
+    {
+        OrganizationId = organizationId;
+        Role = role;
+        return this;
+    }
 }

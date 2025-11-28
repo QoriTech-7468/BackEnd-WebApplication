@@ -51,5 +51,62 @@ public static class ModelBuilderExtensions
             .HasPrincipalKey(o => o.Id)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Configuración de la tabla Invitations
+        builder.Entity<Invitation>().ToTable("Invitations");
+
+        // Primary Key
+        builder.Entity<Invitation>().HasKey(i => i.Id);
+        builder.Entity<Invitation>().Property(i => i.Id).IsRequired().ValueGeneratedOnAdd();
+
+        // Configure OrganizationId
+        builder.Entity<Invitation>()
+            .Property(i => i.OrganizationId)
+            .HasConversion(
+                id => id.Value,
+                value => new OrganizationId(value))
+            .HasColumnName("OrganizationId")
+            .IsRequired();
+
+        // Configure UserId
+        builder.Entity<Invitation>()
+            .Property(i => i.UserId)
+            .IsRequired();
+
+        // Configure Role as enum stored as int
+        builder.Entity<Invitation>()
+            .Property(i => i.Role)
+            .HasConversion<int>()
+            .IsRequired();
+
+        // Configure Status as enum stored as int
+        builder.Entity<Invitation>()
+            .Property(i => i.Status)
+            .HasConversion<int>()
+            .IsRequired();
+
+        // Configure CreatedAt
+        builder.Entity<Invitation>()
+            .Property(i => i.CreatedAt)
+            .IsRequired();
+
+        // Relationships
+        builder.Entity<Invitation>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(i => i.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Invitation>()
+            .HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(i => i.OrganizationId)
+            .HasPrincipalKey(o => o.Id)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Index to prevent duplicate pending invitations
+        builder.Entity<Invitation>()
+            .HasIndex(i => new { i.UserId, i.OrganizationId })
+            .IsUnique();
     }
 }

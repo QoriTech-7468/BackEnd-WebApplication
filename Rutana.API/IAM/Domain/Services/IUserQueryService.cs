@@ -29,4 +29,9 @@ public interface IUserQueryService
     /// </summary>
     // CAMBIO AQUÍ: De 'User?' a 'IEnumerable<User>' (Devuelve una lista)
     Task<IEnumerable<User>> Handle(GetUserByRoleQuery query);
+
+    /// <summary>
+    ///     Handle a <see cref="GetUserByEmailQuery" /> to retrieve a user by email.
+    /// </summary>
+    Task<User?> Handle(GetUserByEmailQuery query);
 }
