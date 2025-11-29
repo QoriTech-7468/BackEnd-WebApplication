@@ -4,7 +4,9 @@ public static class WebApplicationExtensions
 {
     public static void UseOpenApiDocumentation(this WebApplication app)
     {
+
         app.MapOpenApi();
+
         app.UseSwagger();
         app.UseSwaggerUI();
     }
