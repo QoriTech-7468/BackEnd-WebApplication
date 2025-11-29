@@ -44,25 +44,6 @@ public class RouteDraftsController(
     }
 
     /// <summary>
-    /// Get all route drafts by organization id.
-    /// </summary>
-    /// <param name="organizationId">The organization identifier.</param>
-    /// <returns>The list of route drafts.</returns>
-    [HttpGet("organization/{organizationId:int}")]
-    [SwaggerOperation(
-        Summary = "Get route drafts by organization",
-        Description = "Get all route drafts belonging to an organization",
-        OperationId = "GetRouteDraftsByOrganizationId")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The list of route drafts", typeof(IEnumerable<RouteDraftResource>))]
-    public async Task<IActionResult> GetRouteDraftsByOrganizationId(int organizationId)
-    {
-        var getRouteDraftsByOrganizationIdQuery = new GetRouteDraftsByOrganizationIdQuery(organizationId);
-        var routeDrafts = await routeQueryService.Handle(getRouteDraftsByOrganizationIdQuery);
-        var resources = routeDrafts.Select(RouteDraftResourceFromEntityAssembler.ToResourceFromEntity);
-        return Ok(resources);
-    }
-
-    /// <summary>
     /// Create a new route draft.
     /// </summary>
     /// <param name="resource">The create route draft resource.</param>
@@ -106,32 +87,6 @@ public class RouteDraftsController(
     }
 
     /// <summary>
-    /// Publish a route draft as an active route.
-    /// </summary>
-    /// <param name="routeDraftId">The route draft identifier.</param>
-    /// <returns>The published route resource.</returns>
-    [HttpPost("{routeDraftId:int}/publish")]
-    [SwaggerOperation(
-        Summary = "Publish route draft",
-        Description = "Publish a route draft as an active route",
-        OperationId = "PublishRoute")]
-    [SwaggerResponse(StatusCodes.Status201Created, "The route was published", typeof(RouteResource))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "The route draft could not be published")]
-    [SwaggerResponse(StatusCodes.Status404NotFound, "The route draft was not found")]
-    public async Task<IActionResult> PublishRoute(int routeDraftId)
-    {
-        var publishRouteCommand = new PublishRouteCommand(routeDraftId);
-        var route = await routeCommandService.Handle(publishRouteCommand);
-        if (route is null) return BadRequest();
-        var routeResource = RouteResourceFromEntityAssembler.ToResourceFromEntity(route);
-        return CreatedAtAction(
-            nameof(RoutesController.GetRouteById), 
-            "Routes",
-            new { routeId = route.Id }, 
-            routeResource);
-    }
-
-    /// <summary>
     /// Delete a route draft.
     /// </summary>
     /// <param name="routeDraftId">The route draft identifier.</param>
@@ -149,6 +104,34 @@ public class RouteDraftsController(
         var result = await routeCommandService.Handle(deleteRouteDraftCommand);
         if (!result) return NotFound();
         return NoContent();
+    }
+
+    /// <summary>
+    /// Update route draft status (e.g., publish).
+    /// </summary>
+    /// <param name="routeDraftId">The route draft identifier.</param>
+    /// <param name="resource">The update status resource.</param>
+    /// <returns>The published route if status is "published".</returns>
+    [HttpPatch("{routeDraftId:int}/status")]
+    [SwaggerOperation(
+        Summary = "Update route draft status",
+        Description = "Update route draft status. Use 'published' to publish the route draft",
+        OperationId = "UpdateRouteDraftStatus")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The status was updated", typeof(RouteResource))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid status provided")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "The route draft was not found")]
+    public async Task<IActionResult> UpdateRouteDraftStatus(int routeDraftId, [FromBody] UpdateRouteDraftStatusResource resource)
+    {
+        if (resource.Status.Equals("published", StringComparison.OrdinalIgnoreCase))
+        {
+            var publishRouteCommand = new PublishRouteCommand(routeDraftId);
+            var route = await routeCommandService.Handle(publishRouteCommand);
+            if (route is null) return BadRequest();
+            var routeResource = RouteResourceFromEntityAssembler.ToResourceFromEntity(route);
+            return Ok(routeResource);
+        }
+
+        return BadRequest("Invalid status. Valid values: 'published'");
     }
 
     /// <summary>
