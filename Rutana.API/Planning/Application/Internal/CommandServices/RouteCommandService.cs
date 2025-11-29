@@ -1,10 +1,10 @@
 using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.Fleet.Domain.Model.ValueObjects;
+using Rutana.API.Planning.Application.Internal.OutboundServices;
 using Rutana.API.Planning.Domain.Model.Commands;
 using Rutana.API.Planning.Domain.Model.ValueObjects;
 using Rutana.API.Planning.Domain.Repositories;
 using Rutana.API.Planning.Domain.Services;
-using Rutana.API.Planning.Interfaces.ACL;
 using Rutana.API.Shared.Domain.Repositories;
 using RouteDraftAggregate = Rutana.API.Planning.Domain.Model.Aggregates.RouteDraft;
 using RouteAggregate = Rutana.API.Planning.Domain.Model.Aggregates.Route;
@@ -17,14 +17,14 @@ namespace Rutana.API.Planning.Application.Internal.CommandServices;
 /// </summary>
 /// <param name="routeDraftRepository">The route draft repository.</param>
 /// <param name="routeRepository">The route repository.</param>
-/// <param name="fleetContextFacade">The fleet context facade for vehicle validation.</param>
-/// <param name="crmContextFacade">The CRM context facade for location validation.</param>
+/// <param name="fleetService">The fleet outbound service for vehicle validation.</param>
+/// <param name="crmService">The CRM outbound service for location validation.</param>
 /// <param name="unitOfWork">The unit of work for transaction management.</param>
 public class RouteCommandService(
     IRouteDraftRepository routeDraftRepository,
     IRouteRepository routeRepository,
-    IFleetContextFacade fleetContextFacade,
-    ICrmContextFacade crmContextFacade,
+    IFleetService fleetService,
+    ICrmService crmService,
     IUnitOfWork unitOfWork)
     : IRouteCommandService
 {
@@ -55,11 +55,11 @@ public class RouteCommandService(
         // Validate vehicle if provided
         if (command.VehicleId.HasValue)
         {
-            var vehicleExists = await fleetContextFacade.ExistsVehicleByIdAsync(command.VehicleId.Value);
+            var vehicleExists = await fleetService.ExistsVehicleByIdAsync(command.VehicleId.Value);
             if (!vehicleExists)
                 throw new InvalidOperationException($"Vehicle with id {command.VehicleId.Value} does not exist.");
 
-            var vehicleIsEnabled = await fleetContextFacade.IsVehicleEnabledAsync(command.VehicleId.Value);
+            var vehicleIsEnabled = await fleetService.IsVehicleEnabledAsync(command.VehicleId.Value);
             if (!vehicleIsEnabled)
                 throw new InvalidOperationException($"Vehicle with id {command.VehicleId.Value} is not enabled.");
         }
@@ -69,11 +69,11 @@ public class RouteCommandService(
         {
             foreach (var locationId in command.LocationIds)
             {
-                var locationExists = await crmContextFacade.ExistsLocationByIdAsync(locationId);
+                var locationExists = await crmService.ExistsLocationByIdAsync(locationId);
                 if (!locationExists)
                     throw new InvalidOperationException($"Location with id {locationId} does not exist.");
 
-                var locationIsEnabled = await crmContextFacade.IsLocationEnabledAsync(locationId);
+                var locationIsEnabled = await crmService.IsLocationEnabledAsync(locationId);
                 if (!locationIsEnabled)
                     throw new InvalidOperationException($"Location with id {locationId} is not enabled.");
             }
@@ -84,7 +84,7 @@ public class RouteCommandService(
         // {
         //     foreach (var userId in command.TeamMemberIds)
         //     {
-        //         var userExists = await iamContextFacade.ExistsUserByIdAsync(userId);
+        //         var userExists = await iamService.ExistsUserByIdAsync(userId);
         //         if (!userExists)
         //             throw new InvalidOperationException($"User with id {userId} does not exist.");
         //     }
@@ -116,11 +116,11 @@ public class RouteCommandService(
             // Validate vehicle before publishing
             if (routeDraft.VehicleId != null)
             {
-                var vehicleExists = await fleetContextFacade.ExistsVehicleByIdAsync(routeDraft.VehicleId.Value);
+                var vehicleExists = await fleetService.ExistsVehicleByIdAsync(routeDraft.VehicleId.Value);
                 if (!vehicleExists)
                     throw new InvalidOperationException($"Cannot publish route: vehicle with id {routeDraft.VehicleId.Value} does not exist.");
 
-                var vehicleIsEnabled = await fleetContextFacade.IsVehicleEnabledAsync(routeDraft.VehicleId.Value);
+                var vehicleIsEnabled = await fleetService.IsVehicleEnabledAsync(routeDraft.VehicleId.Value);
                 if (!vehicleIsEnabled)
                     throw new InvalidOperationException($"Cannot publish route: vehicle with id {routeDraft.VehicleId.Value} is not enabled.");
             }
@@ -128,11 +128,11 @@ public class RouteCommandService(
             // Validate all locations before publishing
             foreach (var delivery in routeDraft.Deliveries)
             {
-                var locationExists = await crmContextFacade.ExistsLocationByIdAsync(delivery.LocationId.Value);
+                var locationExists = await crmService.ExistsLocationByIdAsync(delivery.LocationId.Value);
                 if (!locationExists)
                     throw new InvalidOperationException($"Cannot publish route: location with id {delivery.LocationId.Value} does not exist.");
 
-                var locationIsEnabled = await crmContextFacade.IsLocationEnabledAsync(delivery.LocationId.Value);
+                var locationIsEnabled = await crmService.IsLocationEnabledAsync(delivery.LocationId.Value);
                 if (!locationIsEnabled)
                     throw new InvalidOperationException($"Cannot publish route: location with id {delivery.LocationId.Value} is not enabled.");
             }
@@ -140,7 +140,7 @@ public class RouteCommandService(
             // TODO: Validate all team members when IAM context is ready
             // foreach (var member in routeDraft.TeamMembers)
             // {
-            //     var userExists = await iamContextFacade.ExistsUserByIdAsync(member.UserId.Value);
+            //     var userExists = await iamService.ExistsUserByIdAsync(member.UserId.Value);
             //     if (!userExists)
             //         throw new InvalidOperationException($"Cannot publish route: user with id {member.UserId.Value} does not exist.");
             // }
@@ -194,12 +194,12 @@ public class RouteCommandService(
             return null;
 
         // Validate location exists
-        var locationExists = await crmContextFacade.ExistsLocationByIdAsync(command.LocationId);
+        var locationExists = await crmService.ExistsLocationByIdAsync(command.LocationId);
         if (!locationExists)
             throw new InvalidOperationException($"Location with id {command.LocationId} does not exist.");
 
         // Validate location is enabled
-        var locationIsEnabled = await crmContextFacade.IsLocationEnabledAsync(command.LocationId);
+        var locationIsEnabled = await crmService.IsLocationEnabledAsync(command.LocationId);
         if (!locationIsEnabled)
             throw new InvalidOperationException($"Location with id {command.LocationId} is not enabled.");
 
@@ -234,7 +234,7 @@ public class RouteCommandService(
             return null;
 
         // TODO: Validate user when IAM context is ready
-        // var userExists = await iamContextFacade.ExistsUserByIdAsync(command.UserId);
+        // var userExists = await iamService.ExistsUserByIdAsync(command.UserId);
         // if (!userExists)
         //     throw new InvalidOperationException($"User with id {command.UserId} does not exist.");
 
@@ -269,12 +269,12 @@ public class RouteCommandService(
             return null;
 
         // Validate vehicle exists
-        var vehicleExists = await fleetContextFacade.ExistsVehicleByIdAsync(command.VehicleId);
+        var vehicleExists = await fleetService.ExistsVehicleByIdAsync(command.VehicleId);
         if (!vehicleExists)
             throw new InvalidOperationException($"Vehicle with id {command.VehicleId} does not exist.");
 
         // Validate vehicle is enabled
-        var vehicleIsEnabled = await fleetContextFacade.IsVehicleEnabledAsync(command.VehicleId);
+        var vehicleIsEnabled = await fleetService.IsVehicleEnabledAsync(command.VehicleId);
         if (!vehicleIsEnabled)
             throw new InvalidOperationException($"Vehicle with id {command.VehicleId} is not enabled.");
 
