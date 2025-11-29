@@ -8,9 +8,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c8a78345-7f14-497f-9b23-3a273480b878" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.rutana/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.rutana/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="c8a78345-7f14-497f-9b23-3a273480b878" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -93,7 +91,7 @@
       <option name="presentableId" value="Default" />
       <updated>1764294571579</updated>
       <workItem from="1764294573720" duration="2999000" />
-      <workItem from="1764388545649" duration="4604000" />
+      <workItem from="1764388545649" duration="4714000" />
     </task>
     <servers />
   </component>
