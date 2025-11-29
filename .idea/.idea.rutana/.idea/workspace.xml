@@ -9,7 +9,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c8a78345-7f14-497f-9b23-3a273480b878" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.rutana/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.rutana/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.rutana/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,6 +25,12 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Rutana.API/Suscriptions/Domain/Model/Aggregates/Subscription.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Rutana.API/Suscriptions/Domain/Model/Commands/CreateSubscription.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Rutana.API/Suscriptions/Domain/Model/ValueObjects/PlanType.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Rutana.API/Suscriptions/Domain/Model/ValueObjects/SubscriptionId.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -87,7 +93,7 @@
       <option name="presentableId" value="Default" />
       <updated>1764294571579</updated>
       <workItem from="1764294573720" duration="2999000" />
-      <workItem from="1764388545649" duration="4121000" />
+      <workItem from="1764388545649" duration="4604000" />
     </task>
     <servers />
   </component>
