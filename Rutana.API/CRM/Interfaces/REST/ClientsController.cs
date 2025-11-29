@@ -26,70 +26,36 @@ public class ClientsController(
     ILocationQueryService locationQueryService) : ControllerBase
 {
     /// <summary>
-    /// Get client by id.
+    /// Get client by id, optionally including locations.
     /// </summary>
     /// <param name="clientId">The client identifier.</param>
+    /// <param name="include">Optional parameter to include related data (e.g., 'locations').</param>
     /// <returns>The client resource.</returns>
     [HttpGet("{clientId:int}")]
     [SwaggerOperation(
         Summary = "Get client by id",
-        Description = "Get a client by its unique identifier",
+        Description = "Get a client by its unique identifier, optionally including locations with ?include=locations",
         OperationId = "GetClientById")]
     [SwaggerResponse(StatusCodes.Status200OK, "The client was found", typeof(ClientResource))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "The client was not found")]
-    public async Task<IActionResult> GetClientById(int clientId)
+    public async Task<IActionResult> GetClientById(int clientId, [FromQuery] string? include = null)
     {
         var clientIdVo = new ClientId(clientId);
         var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
         var client = await clientQueryService.Handle(getClientByIdQuery);
         if (client is null) return NotFound();
+
+        // Check if locations should be included
+        if (!string.IsNullOrWhiteSpace(include) && include.Equals("locations", StringComparison.OrdinalIgnoreCase))
+        {
+            var getLocationsByClientIdQuery = new GetLocationsByClientIdQuery(clientIdVo);
+            var locations = await locationQueryService.Handle(getLocationsByClientIdQuery);
+            var resourceWithLocations = ClientWithLocationsResourceAssembler.ToResourceFromEntity(client, locations);
+            return Ok(resourceWithLocations);
+        }
+
         var resource = ClientResourceFromEntityAssembler.ToResourceFromEntity(client);
         return Ok(resource);
-    }
-
-    /// <summary>
-    /// Get client with its locations by id.
-    /// </summary>
-    /// <param name="clientId">The client identifier.</param>
-    /// <returns>The client with locations resource.</returns>
-    [HttpGet("{clientId:int}/with-locations")]
-    [SwaggerOperation(
-        Summary = "Get client with locations",
-        Description = "Get a client with all its locations by its unique identifier",
-        OperationId = "GetClientWithLocations")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The client with locations was found", typeof(ClientWithLocationsResource))]
-    [SwaggerResponse(StatusCodes.Status404NotFound, "The client was not found")]
-    public async Task<IActionResult> GetClientWithLocations(int clientId)
-    {
-        var clientIdVo = new ClientId(clientId);
-        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
-        var client = await clientQueryService.Handle(getClientByIdQuery);
-        if (client is null) return NotFound();
-
-        var getLocationsByClientIdQuery = new GetLocationsByClientIdQuery(clientIdVo);
-        var locations = await locationQueryService.Handle(getLocationsByClientIdQuery);
-
-        var resource = ClientWithLocationsResourceAssembler.ToResourceFromEntity(client, locations);
-        return Ok(resource);
-    }
-
-    /// <summary>
-    /// Get all clients by organization id.
-    /// </summary>
-    /// <param name="organizationId">The organization identifier.</param>
-    /// <returns>The list of clients.</returns>
-    [HttpGet("organization/{organizationId:int}")]
-    [SwaggerOperation(
-        Summary = "Get clients by organization",
-        Description = "Get all clients belonging to an organization",
-        OperationId = "GetClientsByOrganizationId")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The list of clients", typeof(IEnumerable<ClientResource>))]
-    public async Task<IActionResult> GetClientsByOrganizationId(int organizationId)
-    {
-        var getClientsByOrganizationIdQuery = new GetClientsByOrganizationIdQuery(organizationId);
-        var clients = await clientQueryService.Handle(getClientsByOrganizationIdQuery);
-        var resources = clients.Select(ClientResourceFromEntityAssembler.ToResourceFromEntity);
-        return Ok(resources);
     }
 
     /// <summary>
@@ -114,45 +80,24 @@ public class ClientsController(
     }
 
     /// <summary>
-    /// Enable a client.
+    /// Update a client's state.
     /// </summary>
     /// <param name="clientId">The client identifier.</param>
+    /// <param name="resource">The update client state resource.</param>
     /// <returns>The updated client resource.</returns>
-    [HttpPatch("{clientId:int}/enable")]
+    [HttpPatch("{clientId:int}/state")]
     [SwaggerOperation(
-        Summary = "Enable client",
-        Description = "Enable a client",
-        OperationId = "EnableClient")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The client was enabled", typeof(ClientResource))]
+        Summary = "Update client state",
+        Description = "Update a client's state (enabled/disabled)",
+        OperationId = "UpdateClientState")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The client state was updated", typeof(ClientResource))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid state provided")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "The client was not found")]
-    public async Task<IActionResult> EnableClient(int clientId)
+    public async Task<IActionResult> UpdateClientState(int clientId, [FromBody] UpdateClientStateResource resource)
     {
-        var clientIdVo = new ClientId(clientId);
-        var enableClientCommand = new EnableClientCommand(clientIdVo);
-        var client = await clientCommandService.Handle(enableClientCommand);
-        if (client is null) return NotFound();
-        var clientResource = ClientResourceFromEntityAssembler.ToResourceFromEntity(client);
-        return Ok(clientResource);
-    }
-
-    /// <summary>
-    /// Disable a client.
-    /// </summary>
-    /// <param name="clientId">The client identifier.</param>
-    /// <returns>The updated client resource.</returns>
-    [HttpPatch("{clientId:int}/disable")]
-    [SwaggerOperation(
-        Summary = "Disable client",
-        Description = "Disable a client",
-        OperationId = "DisableClient")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The client was disabled", typeof(ClientResource))]
-    [SwaggerResponse(StatusCodes.Status404NotFound, "The client was not found")]
-    public async Task<IActionResult> DisableClient(int clientId)
-    {
-        var clientIdVo = new ClientId(clientId);
-        var disableClientCommand = new DisableClientCommand(clientIdVo);
-        var client = await clientCommandService.Handle(disableClientCommand);
-        if (client is null) return NotFound();
+        var updateClientStateCommand = UpdateClientStateCommandFromResourceAssembler.ToCommandFromResource(clientId, resource);
+        var client = await clientCommandService.Handle(updateClientStateCommand);
+        if (client is null) return BadRequest();
         var clientResource = ClientResourceFromEntityAssembler.ToResourceFromEntity(client);
         return Ok(clientResource);
     }

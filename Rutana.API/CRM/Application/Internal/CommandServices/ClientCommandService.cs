@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Rutana.API.CRM.Domain.Model.Aggregates;
 using Rutana.API.CRM.Domain.Model.Commands;
-using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.CRM.Domain.Repositories;
 using Rutana.API.CRM.Domain.Services;
 using Rutana.API.Shared.Domain.Repositories;
@@ -37,36 +36,36 @@ public class ClientCommandService(
         await unitOfWork.CompleteAsync();
         
         // After SaveChanges, update the ClientId with the generated value
-        // EF Core generates the ID in the database but doesn't update the value object automatically
-        // We need to reload the entity to get the generated ID value
         await context.Entry(client).ReloadAsync();
         
         return client;
     }
 
     /// <inheritdoc />
-    public async Task<Client?> Handle(EnableClientCommand command)
+    public async Task<Client?> Handle(UpdateClientStateCommand command)
     {
         var client = await clientRepository.FindByIdAsync(command.ClientId.Value);
         if (client is null)
             return null;
 
-        client.Enable();
-        clientRepository.Update(client);
-        await unitOfWork.CompleteAsync();
-        return client;
-    }
-
-    /// <inheritdoc />
-    public async Task<Client?> Handle(DisableClientCommand command)
-    {
-        var client = await clientRepository.FindByIdAsync(command.ClientId.Value);
-        if (client is null)
+        try
+        {
+            client.UpdateState(command);
+            clientRepository.Update(client);
+            await unitOfWork.CompleteAsync();
+            return client;
+        }
+        catch (ArgumentException)
+        {
+            return null; // Invalid state
+        }
+        catch (InvalidOperationException)
+        {
+            return client; // Already in that state, return client anyway
+        }
+        catch (Exception)
+        {
             return null;
-
-        client.Disable();
-        clientRepository.Update(client);
-        await unitOfWork.CompleteAsync();
-        return client;
+        }
     }
 }

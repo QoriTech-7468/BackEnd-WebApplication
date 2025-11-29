@@ -16,16 +16,9 @@ public interface IClientCommandService
     Task<Client?> Handle(RegisterClientCommand command);
 
     /// <summary>
-    /// Handles the enable client command.
+    /// Handles the update client state command.
     /// </summary>
-    /// <param name="command">The enable client command.</param>
-    /// <returns>The enabled client.</returns>
-    Task<Client?> Handle(EnableClientCommand command);
-
-    /// <summary>
-    /// Handles the disable client command.
-    /// </summary>
-    /// <param name="command">The disable client command.</param>
-    /// <returns>The disabled client.</returns>
-    Task<Client?> Handle(DisableClientCommand command);
+    /// <param name="command">The update client state command.</param>
+    /// <returns>The updated client.</returns>
+    Task<Client?> Handle(UpdateClientStateCommand command);
 }
