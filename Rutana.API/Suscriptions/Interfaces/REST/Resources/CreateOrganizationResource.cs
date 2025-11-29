@@ -9,7 +9,11 @@ namespace Rutana.API.Suscriptions.Interfaces.REST.Resources;
 /// <param name="Ruc">
 ///     The RUC of the organization
 /// </param>
+/// <param name="UserId">
+///     The identifier of the user who will be assigned as Owner of the organization
+/// </param>
 public record CreateOrganizationResource(
     string Name,
-    string Ruc);
+    string Ruc,
+    int UserId);
 
