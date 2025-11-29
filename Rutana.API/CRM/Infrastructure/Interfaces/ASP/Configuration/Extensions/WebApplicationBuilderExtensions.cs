@@ -1,8 +1,10 @@
+using Rutana.API.CRM.Application.ACL.Services;
 using Rutana.API.CRM.Application.Internal.CommandServices;
 using Rutana.API.CRM.Application.Internal.QueryServices;
 using Rutana.API.CRM.Domain.Repositories;
 using Rutana.API.CRM.Domain.Services;
 using Rutana.API.CRM.Infrastructure.Persistence.EFC.Repositories;
+using Rutana.API.CRM.Interfaces.ACL;
 
 namespace Rutana.API.CRM.Infrastructure.Interfaces.ASP.Configuration.Extensions;
 
@@ -26,5 +28,8 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddScoped<IClientQueryService, ClientQueryService>();
         builder.Services.AddScoped<ILocationCommandService, LocationCommandService>();
         builder.Services.AddScoped<ILocationQueryService, LocationQueryService>();
+
+        // CRM Bounded Context - ACL (Anti-Corruption Layer)
+        builder.Services.AddScoped<ICrmContextFacade, CrmContextFacade>();
     }
 }
