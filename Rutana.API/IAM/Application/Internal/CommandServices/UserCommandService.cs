@@ -64,4 +64,37 @@ public class UserCommandService(
         }
         return user;
     }
+
+    // --- ACTUALIZAR ORGANIZACIÓN Y ROLE DEL USUARIO ---
+    public async Task<User> Handle(UpdateUserOrganizationAndRoleCommand command)
+    {
+        // 1. Buscar el usuario
+        var user = await userRepository.FindByIdAsync(command.UserId);
+        if (user == null)
+        {
+            throw new Exception($"User with id {command.UserId} not found");
+        }
+
+        // 2. Validar que el usuario no tenga organización asignada
+        if (user.OrganizationId != null)
+        {
+            throw new Exception("User already belongs to an organization");
+        }
+
+        // 3. Actualizar el usuario con organizationId y role
+        var organizationId = new OrganizationId(command.OrganizationId);
+        user.UpdateOrganizationAndRole(organizationId, command.Role);
+
+        try
+        {
+            userRepository.Update(user);
+            await unitOfWork.CompleteAsync();
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"An error occurred while updating user: {e.Message}");
+        }
+
+        return user;
+    }
 }
