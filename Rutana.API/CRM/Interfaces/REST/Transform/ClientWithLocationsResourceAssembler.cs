@@ -19,7 +19,7 @@ public static class ClientWithLocationsResourceAssembler
         var locationResources = locations.Select(location => 
             new LocationResource(
                 location.Id.Value,
-                location.Name.Value,
+                location.Name.Value, // Es Name, no LocationName
                 location.Proximity.ToString(),
                 location.IsEnabled,
                 ClientSummaryResourceFromEntityAssembler.ToResourceFromEntity(client)

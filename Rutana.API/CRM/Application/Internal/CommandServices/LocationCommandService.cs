@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Rutana.API.CRM.Domain.Model.Aggregates;
 using Rutana.API.CRM.Domain.Model.Commands;
-using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.CRM.Domain.Repositories;
 using Rutana.API.CRM.Domain.Services;
 using Rutana.API.Shared.Domain.Repositories;
@@ -24,7 +23,7 @@ public class LocationCommandService(
     public async Task<Location?> Handle(RegisterLocationCommand command)
     {
         // Verificar si ya existe una ubicación con el mismo nombre para el cliente
-        var exists = await locationRepository.ExistsByNameAndClientIdAsync(
+        var exists = await locationRepository.ExistsByLocationNameAndClientIdAsync(
             command.Name, 
             command.ClientId);
         
@@ -37,36 +36,36 @@ public class LocationCommandService(
         await unitOfWork.CompleteAsync();
         
         // After SaveChanges, update the LocationId with the generated value
-        // EF Core generates the ID in the database but doesn't update the value object automatically
-        // We need to reload the entity to get the generated ID value
         await context.Entry(location).ReloadAsync();
         
         return location;
     }
 
     /// <inheritdoc />
-    public async Task<Location?> Handle(EnableLocationCommand command)
+    public async Task<Location?> Handle(UpdateLocationStateCommand command)
     {
         var location = await locationRepository.FindByIdAsync(command.LocationId.Value);
         if (location is null)
             return null;
 
-        location.Enable();
-        locationRepository.Update(location);
-        await unitOfWork.CompleteAsync();
-        return location;
-    }
-
-    /// <inheritdoc />
-    public async Task<Location?> Handle(DisableLocationCommand command)
-    {
-        var location = await locationRepository.FindByIdAsync(command.LocationId.Value);
-        if (location is null)
+        try
+        {
+            location.UpdateState(command);
+            locationRepository.Update(location);
+            await unitOfWork.CompleteAsync();
+            return location;
+        }
+        catch (ArgumentException)
+        {
+            return null; // Invalid state
+        }
+        catch (InvalidOperationException)
+        {
+            return location; // Already in that state, return location anyway
+        }
+        catch (Exception)
+        {
             return null;
-
-        location.Disable();
-        locationRepository.Update(location);
-        await unitOfWork.CompleteAsync();
-        return location;
+        }
     }
 }
