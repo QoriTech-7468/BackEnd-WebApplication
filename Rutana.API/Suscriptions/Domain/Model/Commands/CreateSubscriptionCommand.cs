@@ -5,6 +5,6 @@ namespace Rutana.API.Suscriptions.Domain.Model.Commands;
 /// </summary>
 /// <param name="PlanType">Plan type (Starter, Professional, Enterprise)</param>
 /// <param name="Price">Plan price</param>
-public record CreateSubscription(
+public record CreateSubscriptionCommand(
     string PlanType,
     decimal Price);

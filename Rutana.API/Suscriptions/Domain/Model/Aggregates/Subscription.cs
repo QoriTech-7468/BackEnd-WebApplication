@@ -17,12 +17,12 @@ public partial class Subscription
         Price = price;
     }
 
-    public Subscription(CreateSubscription command) : this(
-        PlanType.From(command.PlanType),
+    public Subscription(CreateSubscriptionCommand command) : this(
+        PlanType.From(command.PlanType),    
         command.Price)
     {}
 
-    public static Subscription Create(CreateSubscription command)
+    public static Subscription Create(CreateSubscriptionCommand command)
     {
         return new Subscription(command);
     }
