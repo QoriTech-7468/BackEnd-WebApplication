@@ -5,7 +5,7 @@ namespace Rutana.API.IAM.Interfaces.REST.Resources;
 /// </summary>
 public record InvitationSummaryResource(
     int Id, 
-    int OrganizationId, 
+    string OrganizationName, 
     string Role, 
     string Status, 
     DateTimeOffset CreatedAt
