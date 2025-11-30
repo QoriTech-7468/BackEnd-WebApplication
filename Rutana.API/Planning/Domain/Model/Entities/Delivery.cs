@@ -40,7 +40,7 @@ public class Delivery
     /// Gets the location identifier where the delivery should be made.
     /// </summary>
     /// <remarks>
-    /// TODO: This references CRM bounded context (Location aggregate).
+    /// References CRM bounded context (Location aggregate).
     /// </remarks>
     public LocationId LocationId { get; private set; }
 
