@@ -30,7 +30,6 @@ public static class WebApplicationBuilderExtensions
         // Planning Bounded Context - Outbound Services
         builder.Services.AddScoped<IFleetService, FleetService>();
         builder.Services.AddScoped<ICrmService, CrmService>();
-        // TODO: Add IAM outbound service when IAM bounded context is implemented
-        // builder.Services.AddScoped<IIamService, IamService>();
+        builder.Services.AddScoped<IIamService, IamService>();
     }
 }

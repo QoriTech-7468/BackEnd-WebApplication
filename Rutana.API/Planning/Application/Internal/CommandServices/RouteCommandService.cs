@@ -1,8 +1,8 @@
 using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.Fleet.Domain.Model.ValueObjects;
+using Rutana.API.IAM.Domain.Model.ValueObject;
 using Rutana.API.Planning.Application.Internal.OutboundServices;
 using Rutana.API.Planning.Domain.Model.Commands;
-using Rutana.API.Planning.Domain.Model.ValueObjects;
 using Rutana.API.Planning.Domain.Repositories;
 using Rutana.API.Planning.Domain.Services;
 using Rutana.API.Shared.Domain.Repositories;
@@ -19,12 +19,14 @@ namespace Rutana.API.Planning.Application.Internal.CommandServices;
 /// <param name="routeRepository">The route repository.</param>
 /// <param name="fleetService">The fleet outbound service for vehicle validation.</param>
 /// <param name="crmService">The CRM outbound service for location validation.</param>
+/// <param name="iamService">The IAM outbound service for user validation.</param>
 /// <param name="unitOfWork">The unit of work for transaction management.</param>
 public class RouteCommandService(
     IRouteDraftRepository routeDraftRepository,
     IRouteRepository routeRepository,
     IFleetService fleetService,
     ICrmService crmService,
+    IIamService iamService,
     IUnitOfWork unitOfWork)
     : IRouteCommandService
 {
@@ -79,16 +81,16 @@ public class RouteCommandService(
             }
         }
 
-        // TODO: Validate team members when IAM context is ready
-        // if (command.TeamMemberIds != null && command.TeamMemberIds.Any())
-        // {
-        //     foreach (var userId in command.TeamMemberIds)
-        //     {
-        //         var userExists = await iamService.ExistsUserByIdAsync(userId);
-        //         if (!userExists)
-        //             throw new InvalidOperationException($"User with id {userId} does not exist.");
-        //     }
-        // }
+        // Validate team members if provided
+        if (command.TeamMemberIds != null && command.TeamMemberIds.Any())
+        {
+            foreach (var userId in command.TeamMemberIds)
+            {
+                var userExists = await iamService.ExistsUserByIdAsync(userId);
+                if (!userExists)
+                    throw new InvalidOperationException($"User with id {userId} does not exist.");
+            }
+        }
 
         // Apply changes to the draft
         routeDraft.ApplyChanges(command);
@@ -137,13 +139,13 @@ public class RouteCommandService(
                     throw new InvalidOperationException($"Cannot publish route: location with id {delivery.LocationId.Value} is not enabled.");
             }
 
-            // TODO: Validate all team members when IAM context is ready
-            // foreach (var member in routeDraft.TeamMembers)
-            // {
-            //     var userExists = await iamService.ExistsUserByIdAsync(member.UserId.Value);
-            //     if (!userExists)
-            //         throw new InvalidOperationException($"Cannot publish route: user with id {member.UserId.Value} does not exist.");
-            // }
+            // Validate all team members before publishing
+            foreach (var member in routeDraft.TeamMembers)
+            {
+                var userExists = await iamService.ExistsUserByIdAsync(member.UserId.Id);
+                if (!userExists)
+                    throw new InvalidOperationException($"Cannot publish route: user with id {member.UserId.Id} does not exist.");
+            }
 
             // Create route from draft (this validates the draft structure)
             var route = RouteAggregate.FromDraft(routeDraft);
@@ -233,10 +235,10 @@ public class RouteCommandService(
         if (routeDraft == null)
             return null;
 
-        // TODO: Validate user when IAM context is ready
-        // var userExists = await iamService.ExistsUserByIdAsync(command.UserId);
-        // if (!userExists)
-        //     throw new InvalidOperationException($"User with id {command.UserId} does not exist.");
+        // Validate user exists
+        var userExists = await iamService.ExistsUserByIdAsync(command.UserId);
+        if (!userExists)
+            throw new InvalidOperationException($"User with id {command.UserId} does not exist.");
 
         try
         {
