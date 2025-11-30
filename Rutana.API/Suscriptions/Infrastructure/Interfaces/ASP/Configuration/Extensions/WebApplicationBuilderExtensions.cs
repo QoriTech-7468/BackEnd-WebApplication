@@ -23,6 +23,15 @@ public static class WebApplicationBuilderExtensions
         // Subscriptions Bounded Context - Services
         builder.Services.AddScoped<IOrganizationCommandService, OrganizationCommandService>();
         builder.Services.AddScoped<IOrganizationQueryService, OrganizationQueryService>();
+        
+        // Repositories
+        builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+
+        // Services 
+        builder.Services.AddScoped<IPaymentQueryService, PaymentQueryService>();
+        // Subscriptions
+        builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+        builder.Services.AddScoped<ISubscriptionCommandService, SubscriptionCommandService>();
+        builder.Services.AddScoped<ISubscriptionQueryService, SubscriptionQueryService>();
     }
 }
-
