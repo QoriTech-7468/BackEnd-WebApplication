@@ -75,6 +75,15 @@ public static class ModelBuilderExtensions
             .HasForeignKey(p => p.UserId) 
             .HasConstraintName("FK_Payments_Users_UserId") 
             .OnDelete(DeleteBehavior.Cascade); 
+        
+        builder.Entity<Payment>().Property(p => p.SubscriptionId).IsRequired();
+        builder.Entity<Payment>()
+            .HasOne<Subscription>()       
+            .WithMany()               
+            .HasForeignKey(p => p.SubscriptionId)
+            .HasConstraintName("FK_Payments_Subscriptions_SubscriptionId")
+            .OnDelete(DeleteBehavior.Restrict); 
+        
         // Subscription Aggregate Configuration 
         
         builder.Entity<Subscription>().ToTable("Subscriptions");
