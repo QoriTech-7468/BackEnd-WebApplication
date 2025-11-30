@@ -1,5 +1,4 @@
-﻿
-using Rutana.API.Suscriptions.Domain.Model.ValueObjects;
+﻿using Rutana.API.Suscriptions.Domain.Model.ValueObjects;
 
 namespace Rutana.API.Suscriptions.Domain.Model.Queries;
 
