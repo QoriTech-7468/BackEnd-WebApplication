@@ -5,5 +5,5 @@ namespace Rutana.API.Suscriptions.Domain.Services;
 
 public interface ISubscriptionCommandService
 {
-    Task<Subscription> Handle(CreateSubscription command);
+    Task<Subscription> Handle(CreateSubscriptionCommand command);
 }

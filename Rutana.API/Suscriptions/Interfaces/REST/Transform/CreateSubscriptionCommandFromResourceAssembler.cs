@@ -6,9 +6,9 @@ namespace Rutana.API.Suscriptions.Interfaces.REST.Transform;
 
 public static class CreateSubscriptionCommandFromResourceAssembler
 {
-    public static CreateSubscription ToCommandFromResource(CreateSubscriptionResource resource)
+    public static CreateSubscriptionCommand ToCommandFromResource(CreateSubscriptionResource resource)
     {
-        return new CreateSubscription(resource.PlanType, resource.Price);
+        return new CreateSubscriptionCommand(resource.PlanType, resource.Price);
     }
 }
 
