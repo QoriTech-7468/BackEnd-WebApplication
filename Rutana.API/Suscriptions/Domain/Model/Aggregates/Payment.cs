@@ -1,4 +1,9 @@
-﻿namespace Rutana.API.Suscriptions.Domain.Model.Aggregates;
+﻿
+using Rutana.API.Suscriptions.Domain.Model.ValueObjects;
+
+namespace Rutana.API.Suscriptions.Domain.Model.Aggregates;
+
+
 
 /// <summary>
 /// Payment aggregate root.
@@ -11,7 +16,7 @@ public partial class Payment
     public string Status { get; private set; } = string.Empty;
     public int UserId { get; private set; }
     
-    public int SubscriptionId { get; private set; }
+    public SubscriptionId SubscriptionId { get; private set; }
     private Payment() { }
 
     /// <summary>
@@ -21,12 +26,12 @@ public partial class Payment
     /// <param name="currency">The currency code (e.g., PEN).</param>
     /// <param name="userId">The ID of the user making the payment.</param>
     
-    public Payment(decimal amount, string currency, int userId, int subscriptionId)
+    public Payment(decimal amount, string currency, int userId, SubscriptionId subscriptionId)
     {
         Amount = amount;
         Currency = currency;
         UserId = userId;
-        SubscriptionId = subscriptionId;
+        SubscriptionId = SubscriptionId;
         Status = "Completed"; 
     }
 }

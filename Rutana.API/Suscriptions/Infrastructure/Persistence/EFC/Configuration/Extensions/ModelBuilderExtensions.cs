@@ -76,13 +76,20 @@ public static class ModelBuilderExtensions
             .HasConstraintName("FK_Payments_Users_UserId") 
             .OnDelete(DeleteBehavior.Cascade); 
         
+        builder.Entity<Payment>().Property(p => p.SubscriptionId)
+            .IsRequired()
+            .HasConversion(
+                id => (int)id.Value,                
+                value => new SubscriptionId(value)  
+            );
+        
         builder.Entity<Payment>().Property(p => p.SubscriptionId).IsRequired();
         builder.Entity<Payment>()
             .HasOne<Subscription>()       
             .WithMany()               
             .HasForeignKey(p => p.SubscriptionId)
             .HasConstraintName("FK_Payments_Subscriptions_SubscriptionId")
-            .OnDelete(DeleteBehavior.Restrict); 
+            .OnDelete(DeleteBehavior.Cascade); 
         
         // Subscription Aggregate Configuration 
         
