@@ -26,4 +26,25 @@ public interface IUserCommandService
     /// <param name="command">The sign-up command with new user data.</param>
     /// <returns>A <see cref="Task" /> that completes when the operation finishes.</returns>
     Task <User>Handle(SignUpCommand command);
+
+    /// <summary>
+    ///     Handle an update user organization and role operation.
+    /// </summary>
+    /// <param name="command">The update command with user, organization and role data.</param>
+    /// <returns>The updated <see cref="User" /> instance.</returns>
+    Task<User> Handle(UpdateUserOrganizationAndRoleCommand command);
+
+    /// <summary>
+    ///     Handle a change user role operation.
+    /// </summary>
+    /// <param name="command">The change role command with user and new role data.</param>
+    /// <returns>The updated <see cref="User" /> instance.</returns>
+    Task<User> Handle(ChangeUserRoleCommand command);
+
+    /// <summary>
+    ///     Handle a remove user from organization operation.
+    /// </summary>
+    /// <param name="command">The remove command with user identifier.</param>
+    /// <returns>The updated <see cref="User" /> instance.</returns>
+    Task<User> Handle(RemoveUserFromOrganizationCommand command);
 }

@@ -42,4 +42,18 @@ public class IamContextFacade(IUserCommandService userCommandService, IUserQuery
         var result = await userQueryService.Handle(getUserByIdQuery);
         return result?.Email ?? string.Empty;
     }
+
+    public async Task UpdateUserOrganizationAndRole(int userId, int organizationId, string role)
+    {
+        // Parse role from string to enum
+        UserRole userRole = UserRole.NotAssigned;
+        if (!string.IsNullOrWhiteSpace(role) && 
+            Enum.TryParse<UserRole>(role, ignoreCase: true, out var parsedRole))
+        {
+            userRole = parsedRole;
+        }
+
+        var command = new UpdateUserOrganizationAndRoleCommand(userId, organizationId, userRole);
+        await userCommandService.Handle(command);
+    }
 }

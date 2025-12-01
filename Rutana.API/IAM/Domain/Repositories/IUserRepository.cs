@@ -1,4 +1,5 @@
 using Rutana.API.IAM.Domain.Model.Aggregates;
+using Rutana.API.Shared.Domain.Model.ValueObjects;
 using Rutana.API.Shared.Domain.Repositories;
 
 namespace Rutana.API.IAM.Domain.Repositories;
@@ -21,4 +22,11 @@ public interface IUserRepository : IBaseRepository<User>
     /// <param name="email">The username to check.</param>
     /// <returns><c>true</c> if a user with the given email exists; otherwise <c>false</c>.</returns>
     Task<bool> ExistsByUsername(string email);
+
+    /// <summary>
+    ///     Find all users by organization identifier asynchronously.
+    /// </summary>
+    /// <param name="organizationId">The organization identifier to search.</param>
+    /// <returns>A collection of <see cref="User" /> instances belonging to the organization.</returns>
+    Task<IEnumerable<User>> FindByOrganizationIdAsync(OrganizationId organizationId);
 }

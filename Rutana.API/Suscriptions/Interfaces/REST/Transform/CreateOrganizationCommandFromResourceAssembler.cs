@@ -21,7 +21,8 @@ public static class CreateOrganizationCommandFromResourceAssembler
     {
         return new CreateOrganizationCommand(
             resource.Name,
-            resource.Ruc
+            resource.Ruc,
+            resource.UserId
         );
     }
 }

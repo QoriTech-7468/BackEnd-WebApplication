@@ -5,7 +5,7 @@ namespace Rutana.API.CRM.Domain.Model.Aggregates;
 
 /// <summary>
 /// Location Aggregate Root.
-/// Represents a client location (delivery/pickup point) in the CRM system.
+/// Represents a physical location associated with a client.
 /// </summary>
 public class Location
 {
@@ -15,8 +15,8 @@ public class Location
     public Location()
     {
         Name = new LocationName();
-        ClientId = new ClientId();
-        Proximity = Proximity.Medium;
+        Proximity = Proximity.Near;
+        ClientId = new ClientId(0);
         IsEnabled = true;
     }
 
@@ -24,13 +24,13 @@ public class Location
     /// Initializes a new instance of the <see cref="Location"/> class with specified parameters.
     /// </summary>
     /// <param name="name">The location name.</param>
+    /// <param name="proximity">The proximity information.</param>
     /// <param name="clientId">The client identifier.</param>
-    /// <param name="proximity">The proximity level.</param>
-    private Location(LocationName name, ClientId clientId, Proximity proximity)
+    private Location(LocationName name, Proximity proximity, ClientId clientId)
     {
         Name = name;
-        ClientId = clientId;
         Proximity = proximity;
+        ClientId = clientId;
         IsEnabled = true;
     }
 
@@ -40,8 +40,8 @@ public class Location
     /// <param name="command">The register location command.</param>
     public Location(RegisterLocationCommand command) : this(
         LocationName.Create(command.Name),
-        new ClientId(command.ClientId),
-        command.Proximity)
+        command.Proximity,
+        new ClientId(command.ClientId))
     {
     }
 
@@ -51,19 +51,19 @@ public class Location
     public LocationId Id { get; internal set; } = new LocationId(0);
 
     /// <summary>
-    /// Gets the name of the location.
+    /// Gets the location name.
     /// </summary>
     public LocationName Name { get; private set; }
+
+    /// <summary>
+    /// Gets the proximity information (coordinates and address).
+    /// </summary>
+    public Proximity Proximity { get; private set; }
 
     /// <summary>
     /// Gets the client identifier that owns this location.
     /// </summary>
     public ClientId ClientId { get; private set; }
-
-    /// <summary>
-    /// Gets the proximity level of the location.
-    /// </summary>
-    public Proximity Proximity { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether the location is enabled.
@@ -92,6 +92,27 @@ public class Location
             throw new InvalidOperationException("Location is already disabled.");
 
         IsEnabled = false;
+    }
+
+    /// <summary>
+    /// Updates the location state based on a command.
+    /// </summary>
+    /// <param name="command">The update location state command.</param>
+    /// <exception cref="ArgumentException">Thrown when an invalid state is provided.</exception>
+    public void UpdateState(UpdateLocationStateCommand command)
+    {
+        if (command.State.Equals("enabled", StringComparison.OrdinalIgnoreCase))
+        {
+            Enable();
+        }
+        else if (command.State.Equals("disabled", StringComparison.OrdinalIgnoreCase))
+        {
+            Disable();
+        }
+        else
+        {
+            throw new ArgumentException($"Invalid state: {command.State}. Valid states are 'enabled' or 'disabled'.");
+        }
     }
 
     /// <summary>

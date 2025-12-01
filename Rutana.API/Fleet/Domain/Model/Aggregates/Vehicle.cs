@@ -116,6 +116,27 @@ public class Vehicle
     }
 
     /// <summary>
+    /// Updates the vehicle state based on a command.
+    /// </summary>
+    /// <param name="command">The update vehicle state command.</param>
+    /// <exception cref="ArgumentException">Thrown when an invalid state is provided.</exception>
+    public void UpdateState(UpdateVehicleStateCommand command)
+    {
+        if (command.State.Equals("enabled", StringComparison.OrdinalIgnoreCase))
+        {
+            Enable();
+        }
+        else if (command.State.Equals("disabled", StringComparison.OrdinalIgnoreCase))
+        {
+            Disable();
+        }
+        else
+        {
+            throw new ArgumentException($"Invalid state: {command.State}. Valid states are 'enabled' or 'disabled'.");
+        }
+    }
+
+    /// <summary>
     /// Factory method to create a new vehicle.
     /// </summary>
     /// <param name="command">The register vehicle command.</param>

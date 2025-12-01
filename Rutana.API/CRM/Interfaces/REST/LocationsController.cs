@@ -1,6 +1,5 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
-using Rutana.API.CRM.Domain.Model.Commands;
 using Rutana.API.CRM.Domain.Model.Queries;
 using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.CRM.Domain.Services;
@@ -11,19 +10,17 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Rutana.API.CRM.Interfaces.REST;
 
 /// <summary>
-/// Locations controller for managing client locations.
+/// Locations controller for managing CRM locations.
 /// </summary>
 /// <param name="locationCommandService">The location command service.</param>
 /// <param name="locationQueryService">The location query service.</param>
-/// <param name="clientQueryService">The client query service.</param>
 [ApiController]
 [Route("api/v1/[controller]")]
 [Produces(MediaTypeNames.Application.Json)]
 [SwaggerTag("Available Location Endpoints")]
 public class LocationsController(
     ILocationCommandService locationCommandService,
-    ILocationQueryService locationQueryService,
-    IClientQueryService clientQueryService) : ControllerBase
+    ILocationQueryService locationQueryService) : ControllerBase
 {
     /// <summary>
     /// Get location by id.
@@ -43,42 +40,10 @@ public class LocationsController(
         var getLocationByIdQuery = new GetLocationByIdQuery(locationIdVo);
         var location = await locationQueryService.Handle(getLocationByIdQuery);
         if (location is null) return NotFound();
-
-        // Get client info for the location
-        var clientIdVo = new ClientId(location.ClientId.Value);
-        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
-        var client = await clientQueryService.Handle(getClientByIdQuery);
-        if (client is null) return NotFound();
-
-        var resource = LocationResourceFromEntityAssembler.ToResourceFromEntity(location, client);
+        
+        //  Usar sobrecarga sin Client
+        var resource = LocationResourceFromEntityAssembler.ToResourceFromEntity(location);
         return Ok(resource);
-    }
-
-    /// <summary>
-    /// Get all locations by client id.
-    /// </summary>
-    /// <param name="clientId">The client identifier.</param>
-    /// <returns>The list of locations.</returns>
-    [HttpGet("client/{clientId:int}")]
-    [SwaggerOperation(
-        Summary = "Get locations by client",
-        Description = "Get all locations belonging to a client",
-        OperationId = "GetLocationsByClientId")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The list of locations", typeof(IEnumerable<LocationResource>))]
-    [SwaggerResponse(StatusCodes.Status404NotFound, "The client was not found")]
-    public async Task<IActionResult> GetLocationsByClientId(int clientId)
-    {
-        // Verify client exists
-        var clientIdVo = new ClientId(clientId);
-        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
-        var client = await clientQueryService.Handle(getClientByIdQuery);
-        if (client is null) return NotFound();
-
-        var getLocationsByClientIdQuery = new GetLocationsByClientIdQuery(clientIdVo);
-        var locations = await locationQueryService.Handle(getLocationsByClientIdQuery);
-        var resources = locations.Select(location => 
-            LocationResourceFromEntityAssembler.ToResourceFromEntity(location, client));
-        return Ok(resources);
     }
 
     /// <summary>
@@ -98,72 +63,34 @@ public class LocationsController(
         var registerLocationCommand = RegisterLocationCommandFromResourceAssembler.ToCommandFromResource(resource);
         var location = await locationCommandService.Handle(registerLocationCommand);
         if (location is null) return BadRequest();
-
-        // Get client info for the response
-        var clientIdVo = new ClientId(location.ClientId.Value);
-        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
-        var client = await clientQueryService.Handle(getClientByIdQuery);
-        if (client is null) return BadRequest();
-
-        var locationResource = LocationResourceFromEntityAssembler.ToResourceFromEntity(location, client);
+        
+        //  Usar sobrecarga sin Client
+        var locationResource = LocationResourceFromEntityAssembler.ToResourceFromEntity(location);
         return CreatedAtAction(nameof(GetLocationById), new { locationId = location.Id.Value }, locationResource);
     }
 
     /// <summary>
-    /// Enable a location.
+    /// Update a location's state.
     /// </summary>
     /// <param name="locationId">The location identifier.</param>
+    /// <param name="resource">The update location state resource.</param>
     /// <returns>The updated location resource.</returns>
-    [HttpPatch("{locationId:int}/enable")]
+    [HttpPatch("{locationId:int}/state")]
     [SwaggerOperation(
-        Summary = "Enable location",
-        Description = "Enable a location",
-        OperationId = "EnableLocation")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The location was enabled", typeof(LocationResource))]
+        Summary = "Update location state",
+        Description = "Update a location's state (enabled/disabled)",
+        OperationId = "UpdateLocationState")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The location state was updated", typeof(LocationResource))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid state provided")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "The location was not found")]
-    public async Task<IActionResult> EnableLocation(int locationId)
+    public async Task<IActionResult> UpdateLocationState(int locationId, [FromBody] UpdateLocationStateResource resource)
     {
-        var locationIdVo = new LocationId(locationId);
-        var enableLocationCommand = new EnableLocationCommand(locationIdVo);
-        var location = await locationCommandService.Handle(enableLocationCommand);
-        if (location is null) return NotFound();
-
-        // Get client info for the response
-        var clientIdVo = new ClientId(location.ClientId.Value);
-        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
-        var client = await clientQueryService.Handle(getClientByIdQuery);
-        if (client is null) return NotFound();
-
-        var locationResource = LocationResourceFromEntityAssembler.ToResourceFromEntity(location, client);
-        return Ok(locationResource);
-    }
-
-    /// <summary>
-    /// Disable a location.
-    /// </summary>
-    /// <param name="locationId">The location identifier.</param>
-    /// <returns>The updated location resource.</returns>
-    [HttpPatch("{locationId:int}/disable")]
-    [SwaggerOperation(
-        Summary = "Disable location",
-        Description = "Disable a location",
-        OperationId = "DisableLocation")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The location was disabled", typeof(LocationResource))]
-    [SwaggerResponse(StatusCodes.Status404NotFound, "The location was not found")]
-    public async Task<IActionResult> DisableLocation(int locationId)
-    {
-        var locationIdVo = new LocationId(locationId);
-        var disableLocationCommand = new DisableLocationCommand(locationIdVo);
-        var location = await locationCommandService.Handle(disableLocationCommand);
-        if (location is null) return NotFound();
-
-        // Get client info for the response
-        var clientIdVo = new ClientId(location.ClientId.Value);
-        var getClientByIdQuery = new GetClientByIdQuery(clientIdVo);
-        var client = await clientQueryService.Handle(getClientByIdQuery);
-        if (client is null) return NotFound();
-
-        var locationResource = LocationResourceFromEntityAssembler.ToResourceFromEntity(location, client);
+        var updateLocationStateCommand = UpdateLocationStateCommandFromResourceAssembler.ToCommandFromResource(locationId, resource);
+        var location = await locationCommandService.Handle(updateLocationStateCommand);
+        if (location is null) return BadRequest();
+        
+        //  Usar sobrecarga sin Client
+        var locationResource = LocationResourceFromEntityAssembler.ToResourceFromEntity(location);
         return Ok(locationResource);
     }
 }

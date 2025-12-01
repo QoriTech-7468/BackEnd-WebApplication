@@ -1,3 +1,4 @@
+using Rutana.API.IAM.Interfaces.ACL;
 using Rutana.API.Shared.Domain.Model.ValueObjects;
 using Rutana.API.Shared.Domain.Repositories;
 using Rutana.API.Suscriptions.Domain.Model.Aggregates;
@@ -17,7 +18,13 @@ namespace Rutana.API.Suscriptions.Application.Internal.CommandServices;
 /// <param name="unitOfWork">
 ///     The <see cref="IUnitOfWork" /> abstraction used to commit the changes as a single transaction.
 /// </param>
-public class OrganizationCommandService(IOrganizationRepository organizationRepository, IUnitOfWork unitOfWork)
+/// <param name="iamContextFacade">
+///     The <see cref="IIamContextFacade" /> used to update user organization and role.
+/// </param>
+public class OrganizationCommandService(
+    IOrganizationRepository organizationRepository, 
+    IUnitOfWork unitOfWork,
+    IIamContextFacade iamContextFacade)
     : IOrganizationCommandService
 {
     /// <summary>
@@ -50,7 +57,18 @@ public class OrganizationCommandService(IOrganizationRepository organizationRepo
             await unitOfWork.CompleteAsync();
 
             // After saving, retrieve the organization with the generated Id
-            return await organizationRepository.FindByRucAsync(ruc);
+            var createdOrganization = await organizationRepository.FindByRucAsync(ruc);
+            
+            if (createdOrganization != null)
+            {
+                // Update the user to assign them as Owner of the newly created organization
+                await iamContextFacade.UpdateUserOrganizationAndRole(
+                    command.UserId, 
+                    createdOrganization.Id.Value, 
+                    "Owner");
+            }
+
+            return createdOrganization;
         }
         catch (Exception e)
         {

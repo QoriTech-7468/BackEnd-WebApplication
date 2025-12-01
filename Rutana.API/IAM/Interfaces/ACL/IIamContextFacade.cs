@@ -6,4 +6,6 @@ public interface IIamContextFacade
     
     Task<int> FetchUserIdByUsername(string username);
     Task<string> FetchUsernameByUserId(int userId);
+    
+    Task UpdateUserOrganizationAndRole(int userId, int organizationId, string role);
 }

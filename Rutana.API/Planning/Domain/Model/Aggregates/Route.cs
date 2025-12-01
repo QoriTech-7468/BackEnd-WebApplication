@@ -77,7 +77,7 @@ public class Route
     /// Gets the vehicle identifier assigned to this route.
     /// </summary>
     /// <remarks>
-    /// TODO: References Fleet bounded context (Vehicle aggregate).
+    /// References Fleet bounded context (Vehicle aggregate).
     /// </remarks>
     public VehicleId VehicleId { get; private set; }
 
