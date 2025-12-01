@@ -6,14 +6,20 @@ namespace Rutana.API.IAM.Interfaces.REST.Transform;
 
 public static class InvitationResourceFromEntityAssembler
 {
-    public static InvitationResource ToResourceFromEntity(Invitation entity, Organization? organization)
+    public static InvitationResource ToResourceFromEntity(Invitation entity, Organization? organization, User? user = null)
     {
         var organizationName = organization?.Name.Value ?? "Unknown Organization";
+        var userName = user?.Name ?? "Unknown";
+        var userSurname = user?.Surname ?? "Unknown";
+        var userEmail = user?.Email ?? "Unknown";
         
         return new InvitationResource(
             entity.Id,
             organizationName,
             entity.UserId,
+            userName,
+            userSurname,
+            userEmail,
             entity.Role.ToString(),
             entity.Status.ToString(),
             entity.CreatedAt

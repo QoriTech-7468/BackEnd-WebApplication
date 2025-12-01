@@ -6,7 +6,10 @@ namespace Rutana.API.IAM.Interfaces.REST.Resources;
 public record InvitationResource(
     int Id, 
     string OrganizationName, 
-    int UserId, 
+    int UserId,
+    string UserName,
+    string UserSurname,
+    string UserEmail,
     string Role, 
     string Status, 
     DateTimeOffset CreatedAt

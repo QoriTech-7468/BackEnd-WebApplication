@@ -84,7 +84,12 @@ public class InvitationsController : ControllerBase
             
             var invitation = await invitationCommandService.Handle(command);
             var organization = await GetOrganizationAsync(invitation.OrganizationId);
-            var invitationResource = InvitationResourceFromEntityAssembler.ToResourceFromEntity(invitation, organization);
+            
+            // Obtener información del usuario invitado
+            var getUserByIdQuery = new GetUserByIdQuery(invitation.UserId);
+            var invitedUser = await userQueryService.Handle(getUserByIdQuery);
+            
+            var invitationResource = InvitationResourceFromEntityAssembler.ToResourceFromEntity(invitation, organization, invitedUser);
             
             return CreatedAtAction(nameof(GetInvitationById), new { id = invitation.Id }, invitationResource);
         }
@@ -144,8 +149,15 @@ public class InvitationsController : ControllerBase
         // Obtener la organización una vez (todas las invitaciones son de la misma organización)
         var organization = await GetOrganizationAsync(authenticatedUser.OrganizationId);
         
-        var orgInvitationResources = orgInvitations.Select(inv => 
-            InvitationResourceFromEntityAssembler.ToResourceFromEntity(inv, organization));
+        // Obtener información de usuarios para cada invitación
+        var orgInvitationResources = new List<InvitationResource>();
+        foreach (var invitation in orgInvitations)
+        {
+            var getUserByIdQuery = new GetUserByIdQuery(invitation.UserId);
+            var invitedUser = await userQueryService.Handle(getUserByIdQuery);
+            orgInvitationResources.Add(
+                InvitationResourceFromEntityAssembler.ToResourceFromEntity(invitation, organization, invitedUser));
+        }
         
         return Ok(orgInvitationResources);
     }
@@ -167,20 +179,32 @@ public class InvitationsController : ControllerBase
         }
 
         var organization = await GetOrganizationAsync(invitation.OrganizationId);
-        var invitationResource = InvitationResourceFromEntityAssembler.ToResourceFromEntity(invitation, organization);
+        
+        // Obtener información del usuario invitado
+        var getUserByIdQuery = new GetUserByIdQuery(invitation.UserId);
+        var invitedUser = await userQueryService.Handle(getUserByIdQuery);
+        
+        var invitationResource = InvitationResourceFromEntityAssembler.ToResourceFromEntity(invitation, organization, invitedUser);
         return Ok(invitationResource);
     }
 
     [HttpPost("{id}/accept")]
-    [SwaggerOperation(Summary = "Accept an invitation", Description = "Accept an invitation", OperationId = "AcceptInvitation")]
+    [SwaggerOperation(Summary = "Accept an invitation", Description = "Accept an invitation - Only users with NotAssigned role can accept", OperationId = "AcceptInvitation")]
     [SwaggerResponse(StatusCodes.Status200OK, "The invitation was accepted", typeof(InvitationResource))]
     [SwaggerResponse(StatusCodes.Status404NotFound, "The invitation was not found")]
+    [SwaggerResponse(StatusCodes.Status403Forbidden, "Only users with NotAssigned role can accept invitations")]
     public async Task<IActionResult> AcceptInvitation(int id)
     {
         var authenticatedUser = GetAuthenticatedUser();
         if (authenticatedUser == null)
         {
             return Unauthorized();
+        }
+
+        // Validar que el usuario tenga role NotAssigned
+        if (authenticatedUser.Role != UserRole.NotAssigned)
+        {
+            return Forbid("Only users with NotAssigned role can accept invitations");
         }
 
         var invitation = await invitationRepository.FindByIdAsync(id);
@@ -200,7 +224,12 @@ public class InvitationsController : ControllerBase
             var command = new AcceptInvitationCommand(id);
             var acceptedInvitation = await invitationCommandService.Handle(command);
             var organization = await GetOrganizationAsync(acceptedInvitation.OrganizationId);
-            var invitationResource = InvitationResourceFromEntityAssembler.ToResourceFromEntity(acceptedInvitation, organization);
+            
+            // Obtener información del usuario invitado
+            var getUserByIdQuery = new GetUserByIdQuery(acceptedInvitation.UserId);
+            var invitedUser = await userQueryService.Handle(getUserByIdQuery);
+            
+            var invitationResource = InvitationResourceFromEntityAssembler.ToResourceFromEntity(acceptedInvitation, organization, invitedUser);
             
             return Ok(invitationResource);
         }
@@ -210,11 +239,11 @@ public class InvitationsController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}")]
-    [SwaggerOperation(Summary = "Reject an invitation", Description = "Reject an invitation (delete it)", OperationId = "RejectInvitation")]
-    [SwaggerResponse(StatusCodes.Status204NoContent, "The invitation was rejected")]
+    [HttpDelete("{id}/cancel")]
+    [SwaggerOperation(Summary = "Cancel an invitation", Description = "Cancel an invitation (delete it) - Anyone can cancel invitations", OperationId = "CancelInvitation")]
+    [SwaggerResponse(StatusCodes.Status204NoContent, "The invitation was cancelled")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "The invitation was not found")]
-    public async Task<IActionResult> RejectInvitation(int id)
+    public async Task<IActionResult> CancelInvitation(int id)
     {
         var authenticatedUser = GetAuthenticatedUser();
         if (authenticatedUser == null)
@@ -226,12 +255,6 @@ public class InvitationsController : ControllerBase
         if (invitation == null)
         {
             return NotFound();
-        }
-
-        // Validar que el usuario autenticado es el dueño de la invitación
-        if (invitation.UserId != authenticatedUser.Id)
-        {
-            return Forbid("You can only reject your own invitations");
         }
 
         try

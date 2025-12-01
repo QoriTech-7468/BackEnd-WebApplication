@@ -32,4 +32,10 @@ public class UserQueryService(IUserRepository userRepository) : IUserQueryServic
     {
         return await userRepository.FindByUsernameAsync(query.Email);
     }
+
+    public async Task<IEnumerable<User>> Handle(GetUsersByOrganizationIdQuery query)
+    {
+        var organizationId = new Shared.Domain.Model.ValueObjects.OrganizationId(query.OrganizationId);
+        return await userRepository.FindByOrganizationIdAsync(organizationId);
+    }
 }
