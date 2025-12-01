@@ -1,12 +1,13 @@
 namespace Rutana.API.CRM.Interfaces.REST.Resources;
 
 /// <summary>
-/// Client resource for REST API responses.
+/// Resource to update a client.
 /// </summary>
-/// <param name="Id">The unique identifier of the client.</param>
+/// <param name="Id">The client identifier.</param>
 /// <param name="Name">The name of the client.</param>
 /// <param name="IsActive">Indicates whether the client is active.</param>
-public record ClientResource(
+public record UpdateClientResource(
     int Id,
     string Name,
     bool IsActive);
+

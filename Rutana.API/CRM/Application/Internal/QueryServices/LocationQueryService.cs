@@ -24,4 +24,10 @@ public class LocationQueryService(ILocationRepository locationRepository) : ILoc
     {
         return await locationRepository.FindByIdAsync(query.LocationId.Value);
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<Location>> Handle(GetAllLocationsQuery query)
+    {
+        return await locationRepository.FindAllAsync(query.IsActive, query.ClientId);
+    }
 }

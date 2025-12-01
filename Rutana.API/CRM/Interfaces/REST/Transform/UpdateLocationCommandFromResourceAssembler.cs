@@ -5,17 +5,19 @@ using Rutana.API.CRM.Interfaces.REST.Resources;
 namespace Rutana.API.CRM.Interfaces.REST.Transform;
 
 /// <summary>
-/// Assembler class to convert RegisterLocationResource to RegisterLocationCommand.
+/// Assembler to convert UpdateLocationResource to UpdateLocationCommand.
 /// </summary>
-public static class RegisterLocationCommandFromResourceAssembler
+public static class UpdateLocationCommandFromResourceAssembler
 {
     /// <summary>
-    /// Converts a RegisterLocationResource to a RegisterLocationCommand.
+    /// Convert resource to command.
     /// </summary>
-    /// <param name="resource">The RegisterLocationResource.</param>
-    /// <returns>The RegisterLocationCommand.</returns>
-    public static RegisterLocationCommand ToCommandFromResource(RegisterLocationResource resource)
+    /// <param name="resource">The update location resource.</param>
+    /// <returns>The update location command.</returns>
+    public static UpdateLocationCommand ToCommandFromResource(UpdateLocationResource resource)
     {
+        var locationIdVo = new LocationId(resource.Id);
+        
         // Parse the proximity string to enum (handle lowercase: close, mid, far)
         var proximityString = resource.Proximity.ToLowerInvariant();
         Proximity proximity = proximityString switch
@@ -26,11 +28,14 @@ public static class RegisterLocationCommandFromResourceAssembler
             _ => throw new ArgumentException($"Invalid proximity value: {resource.Proximity}. Valid values are: close, mid, far")
         };
 
-        return new RegisterLocationCommand(
-            resource.ClientId,
+        return new UpdateLocationCommand(
+            locationIdVo,
             resource.Address,
             resource.Latitude,
             resource.Longitude,
-            proximity);
+            proximity,
+            resource.IsActive,
+            resource.ClientId);
     }
 }
+

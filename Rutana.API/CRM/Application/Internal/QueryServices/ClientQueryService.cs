@@ -23,4 +23,10 @@ public class ClientQueryService(IClientRepository clientRepository) : IClientQue
     {
         return await clientRepository.FindByIdAsync(query.ClientId.Value);
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<Client>> Handle(GetAllClientsQuery query)
+    {
+        return await clientRepository.FindAllAsync(query.IsActive);
+    }
 }

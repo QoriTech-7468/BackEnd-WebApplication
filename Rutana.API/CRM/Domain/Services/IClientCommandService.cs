@@ -21,4 +21,11 @@ public interface IClientCommandService
     /// <param name="command">The update client state command.</param>
     /// <returns>The updated client.</returns>
     Task<Client?> Handle(UpdateClientStateCommand command);
+
+    /// <summary>
+    /// Handles the update client command.
+    /// </summary>
+    /// <param name="command">The update client command.</param>
+    /// <returns>The updated client.</returns>
+    Task<Client?> Handle(UpdateClientCommand command);
 }

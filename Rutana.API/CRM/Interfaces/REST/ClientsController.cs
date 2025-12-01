@@ -26,6 +26,25 @@ public class ClientsController(
     ILocationQueryService locationQueryService) : ControllerBase
 {
     /// <summary>
+    /// Get all clients, optionally filtered by active status.
+    /// </summary>
+    /// <param name="isActive">Optional filter by active status.</param>
+    /// <returns>The list of clients.</returns>
+    [HttpGet]
+    [SwaggerOperation(
+        Summary = "Get all clients",
+        Description = "Get all clients, optionally filtered by active status with ?isActive=true/false",
+        OperationId = "GetAllClients")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The list of clients", typeof(IEnumerable<ClientResource>))]
+    public async Task<IActionResult> GetAllClients([FromQuery] bool? isActive = null)
+    {
+        var getAllClientsQuery = new GetAllClientsQuery(isActive);
+        var clients = await clientQueryService.Handle(getAllClientsQuery);
+        var resources = clients.Select(ClientResourceFromEntityAssembler.ToResourceFromEntity);
+        return Ok(resources);
+    }
+
+    /// <summary>
     /// Get client by id, optionally including locations.
     /// </summary>
     /// <param name="clientId">The client identifier.</param>
@@ -80,24 +99,50 @@ public class ClientsController(
     }
 
     /// <summary>
-    /// Update a client's state.
+    /// Update a client.
     /// </summary>
     /// <param name="clientId">The client identifier.</param>
-    /// <param name="resource">The update client state resource.</param>
+    /// <param name="resource">The update client resource.</param>
     /// <returns>The updated client resource.</returns>
-    [HttpPatch("{clientId:int}/state")]
+    [HttpPut("{clientId:int}")]
     [SwaggerOperation(
-        Summary = "Update client state",
-        Description = "Update a client's state (enabled/disabled)",
-        OperationId = "UpdateClientState")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The client state was updated", typeof(ClientResource))]
-    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid state provided")]
+        Summary = "Update a client",
+        Description = "Update a client's information",
+        OperationId = "UpdateClient")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The client was updated", typeof(ClientResource))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "The client could not be updated")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "The client was not found")]
-    public async Task<IActionResult> UpdateClientState(int clientId, [FromBody] UpdateClientStateResource resource)
+    public async Task<IActionResult> UpdateClient(int clientId, [FromBody] UpdateClientResource resource)
     {
-        var updateClientStateCommand = UpdateClientStateCommandFromResourceAssembler.ToCommandFromResource(clientId, resource);
+        if (resource.Id != clientId)
+            return BadRequest("Client ID in URL does not match the resource ID.");
+
+        var updateClientCommand = UpdateClientCommandFromResourceAssembler.ToCommandFromResource(resource);
+        var client = await clientCommandService.Handle(updateClientCommand);
+        if (client is null) return NotFound();
+        var clientResource = ClientResourceFromEntityAssembler.ToResourceFromEntity(client);
+        return Ok(clientResource);
+    }
+
+    /// <summary>
+    /// Update a client's status.
+    /// </summary>
+    /// <param name="clientId">The client identifier.</param>
+    /// <param name="resource">The update client status resource.</param>
+    /// <returns>The updated client resource.</returns>
+    [HttpPatch("{clientId:int}/status")]
+    [SwaggerOperation(
+        Summary = "Update client status",
+        Description = "Update a client's status (activate/deactivate)",
+        OperationId = "UpdateClientStatus")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The client status was updated", typeof(ClientResource))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid status provided")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "The client was not found")]
+    public async Task<IActionResult> UpdateClientStatus(int clientId, [FromBody] UpdateClientStatusResource resource)
+    {
+        var updateClientStateCommand = UpdateClientStatusCommandFromResourceAssembler.ToCommandFromResource(clientId, resource);
         var client = await clientCommandService.Handle(updateClientStateCommand);
-        if (client is null) return BadRequest();
+        if (client is null) return NotFound();
         var clientResource = ClientResourceFromEntityAssembler.ToResourceFromEntity(client);
         return Ok(clientResource);
     }

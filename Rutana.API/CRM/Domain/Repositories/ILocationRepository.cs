@@ -30,4 +30,12 @@ public interface ILocationRepository : IBaseRepository<Location>
     /// <param name="clientId">The client identifier.</param>
     /// <returns>True if exists; otherwise, false.</returns>
     Task<bool> ExistsByLocationNameAndClientIdAsync(string locationName, int clientId);
+
+    /// <summary>
+    /// Finds all locations, optionally filtered by active status and client ID.
+    /// </summary>
+    /// <param name="isActive">Optional filter by active status. If null, returns all locations.</param>
+    /// <param name="clientId">Optional filter by client ID. If null, returns locations for all clients.</param>
+    /// <returns>A collection of locations.</returns>
+    Task<IEnumerable<Location>> FindAllAsync(bool? isActive = null, int? clientId = null);
 }

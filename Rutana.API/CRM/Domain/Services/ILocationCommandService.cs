@@ -21,4 +21,11 @@ public interface ILocationCommandService
     /// <param name="command">The update location state command.</param>
     /// <returns>The updated location.</returns>
     Task<Location?> Handle(UpdateLocationStateCommand command);
+
+    /// <summary>
+    /// Handles the update location command.
+    /// </summary>
+    /// <param name="command">The update location command.</param>
+    /// <returns>The updated location.</returns>
+    Task<Location?> Handle(UpdateLocationCommand command);
 }

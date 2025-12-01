@@ -5,11 +5,11 @@ namespace Rutana.API.CRM.Interfaces.REST.Resources;
 /// Includes the client and all its locations.
 /// </summary>
 /// <param name="Id">The unique identifier of the client.</param>
-/// <param name="CompanyName">The company name of the client.</param>
-/// <param name="IsEnabled">Indicates whether the client is enabled.</param>
+/// <param name="Name">The name of the client.</param>
+/// <param name="IsActive">Indicates whether the client is active.</param>
 /// <param name="Locations">The list of locations belonging to this client.</param>
 public record ClientWithLocationsResource(
     int Id,
-    string CompanyName,
-    bool IsEnabled,
+    string Name,
+    bool IsActive,
     IEnumerable<LocationResource> Locations);
