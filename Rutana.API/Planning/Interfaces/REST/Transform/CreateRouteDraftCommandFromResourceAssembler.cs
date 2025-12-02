@@ -17,6 +17,7 @@ public static class CreateRouteDraftCommandFromResourceAssembler
     {
         return new CreateRouteDraftCommand(
             resource.OrganizationId,
-            resource.ColorCode);
+            resource.ColorCode,
+            resource.ExecutionDate);
     }
 }

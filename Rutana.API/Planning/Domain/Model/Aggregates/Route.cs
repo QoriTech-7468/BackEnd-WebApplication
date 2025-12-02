@@ -23,6 +23,7 @@ public class Route
         OrganizationId = new OrganizationId(0);
         ColorCode = new ColorCode();
         VehicleId = new VehicleId(0);
+        ExecutionDate = DateTime.UtcNow.Date;
         StartedAt = DateTime.UtcNow;
         EndedAt = null;
         Status = RouteStatus.Published;
@@ -34,6 +35,7 @@ public class Route
     /// <param name="organizationId">The organization identifier.</param>
     /// <param name="colorCode">The color code.</param>
     /// <param name="vehicleId">The vehicle identifier.</param>
+    /// <param name="executionDate">The date when the route will be executed.</param>
     /// <param name="startedAt">The start time.</param>
     /// <param name="endedAt">The end time.</param>
     /// <param name="deliveries">The list of deliveries.</param>
@@ -42,6 +44,7 @@ public class Route
         OrganizationId organizationId,
         ColorCode colorCode,
         VehicleId vehicleId,
+        DateTime executionDate,
         DateTime startedAt,
         DateTime? endedAt,
         List<Delivery> deliveries,
@@ -50,6 +53,7 @@ public class Route
         OrganizationId = organizationId;
         ColorCode = colorCode;
         VehicleId = vehicleId;
+        ExecutionDate = executionDate.Date; // Store only the date part
         StartedAt = startedAt;
         EndedAt = endedAt;
         Status = RouteStatus.Published;
@@ -80,6 +84,15 @@ public class Route
     /// References Fleet bounded context (Vehicle aggregate).
     /// </remarks>
     public VehicleId VehicleId { get; private set; }
+
+    /// <summary>
+    /// Gets the date when the route will be executed.
+    /// </summary>
+    /// <remarks>
+    /// This date is used for planning and filtering routes by execution date.
+    /// Only the date part is stored (time is ignored).
+    /// </remarks>
+    public DateTime ExecutionDate { get; private set; }
 
     /// <summary>
     /// Gets the actual start time of the route.
@@ -161,7 +174,8 @@ public class Route
         return new Route(
             draft.OrganizationId,
             draft.ColorCode,
-            draft.VehicleId,
+            draft.VehicleId!,
+            draft.ExecutionDate,
             draft.StartedAt!.Value,
             draft.EndedAt,
             deliveries,

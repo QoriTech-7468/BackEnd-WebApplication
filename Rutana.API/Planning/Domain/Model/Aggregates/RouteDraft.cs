@@ -25,6 +25,7 @@ public class RouteDraft
         OrganizationId = new OrganizationId(0);
         ColorCode = new ColorCode();
         VehicleId = null;
+        ExecutionDate = DateTime.UtcNow.Date;
         StartedAt = null;
         EndedAt = null;
     }
@@ -34,11 +35,13 @@ public class RouteDraft
     /// </summary>
     /// <param name="organizationId">The organization identifier.</param>
     /// <param name="colorCode">The color code for route identification.</param>
-    private RouteDraft(OrganizationId organizationId, ColorCode colorCode)
+    /// <param name="executionDate">The date when the route will be executed.</param>
+    private RouteDraft(OrganizationId organizationId, ColorCode colorCode, DateTime executionDate)
     {
         OrganizationId = organizationId;
         ColorCode = colorCode;
         VehicleId = null;
+        ExecutionDate = executionDate.Date; // Store only the date part
         StartedAt = null;
         EndedAt = null;
     }
@@ -49,7 +52,8 @@ public class RouteDraft
     /// <param name="command">The create route draft command.</param>
     public RouteDraft(CreateRouteDraftCommand command) : this(
         new OrganizationId(command.OrganizationId),
-        ColorCode.Create(command.ColorCode))
+        ColorCode.Create(command.ColorCode),
+        command.ExecutionDate)
     {
     }
 
@@ -75,6 +79,15 @@ public class RouteDraft
     /// References Fleet bounded context (Vehicle aggregate).
     /// </remarks>
     public VehicleId? VehicleId { get; private set; }
+
+    /// <summary>
+    /// Gets the date when the route will be executed.
+    /// </summary>
+    /// <remarks>
+    /// This date is used for planning and filtering routes by execution date.
+    /// Only the date part is stored (time is ignored).
+    /// </remarks>
+    public DateTime ExecutionDate { get; private set; }
 
     /// <summary>
     /// Gets the planned start time for the route.
@@ -112,6 +125,12 @@ public class RouteDraft
         if (command.VehicleId.HasValue)
         {
             VehicleId = new VehicleId(command.VehicleId.Value);
+        }
+
+        // Update execution date if provided
+        if (command.ExecutionDate.HasValue)
+        {
+            ExecutionDate = command.ExecutionDate.Value.Date; // Store only the date part
         }
 
         // Update start/end times

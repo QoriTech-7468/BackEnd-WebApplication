@@ -63,6 +63,12 @@ public static class ModelBuilderExtensions
             .HasColumnName("VehicleId")
             .IsRequired(false);
 
+        // ExecutionDate as date property (date only, no time)
+        routeDraft.Property(rd => rd.ExecutionDate)
+            .HasColumnName("ExecutionDate")
+            .IsRequired()
+            .HasColumnType("date");
+
         // DateTime properties
         routeDraft.Property(rd => rd.StartedAt)
             .HasColumnName("StartedAt")
@@ -126,6 +132,12 @@ public static class ModelBuilderExtensions
                 value => new VehicleId(value))
             .HasColumnName("VehicleId")
             .IsRequired();
+
+        // ExecutionDate as date property (date only, no time)
+        route.Property(r => r.ExecutionDate)
+            .HasColumnName("ExecutionDate")
+            .IsRequired()
+            .HasColumnType("date");
 
         // DateTime properties
         route.Property(r => r.StartedAt)

@@ -26,6 +26,7 @@ public static class RouteResourceFromEntityAssembler
             entity.OrganizationId.Value,
             entity.VehicleId.Value,
             entity.ColorCode.Value,
+            entity.ExecutionDate,
             entity.StartedAt,
             entity.EndedAt,
             entity.Status.ToString(),
