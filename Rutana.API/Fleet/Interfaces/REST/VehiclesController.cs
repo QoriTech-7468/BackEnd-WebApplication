@@ -5,6 +5,7 @@ using Rutana.API.Fleet.Domain.Model.Queries;
 using Rutana.API.Fleet.Domain.Services;
 using Rutana.API.Fleet.Interfaces.REST.Resources;
 using Rutana.API.Fleet.Interfaces.REST.Transform;
+using Rutana.API.IAM.Domain.Model.Aggregates;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Rutana.API.Fleet.Interfaces.REST;
@@ -34,19 +35,15 @@ public class VehiclesController(
     [SwaggerResponse(StatusCodes.Status200OK, "The list of vehicles", typeof(IEnumerable<VehicleResource>))]
     public async Task<IActionResult> GetAllVehicles()
     {
-        var organizationIdString = User.Claims.FirstOrDefault(c => 
-            c.Type.EndsWith("sid", StringComparison.OrdinalIgnoreCase) || 
-            c.Type.Equals("organizationId", StringComparison.OrdinalIgnoreCase)
-        )?.Value;
+        // Get authenticated user from HttpContext.Items (set by RequestAuthorizationMiddleware)
+        var user = HttpContext.Items["User"] as User;
         
-        if (string.IsNullOrEmpty(organizationIdString)) 
+        if (user == null || user.OrganizationId == null)
         {
-            Console.WriteLine("Error: No se encontró organizationId ni sid. Claims disponibles:");
-            foreach (var claim in User.Claims) Console.WriteLine($"- {claim.Type}: {claim.Value}");
-            
-            return Unauthorized();
+            return Unauthorized("User not authenticated or not associated with an organization");
         }
-        var organizationId = int.Parse(organizationIdString);
+        
+        var organizationId = user.OrganizationId.Value;
         var getAllVehiclesQuery = new GetAllVehiclesQuery(organizationId);
         var vehicles = await vehicleQueryService.Handle(getAllVehiclesQuery);
         var resources = vehicles.Select(VehicleResourceFromEntityAssembler.ToResourceFromEntity);
