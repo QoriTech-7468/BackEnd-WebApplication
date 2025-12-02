@@ -34,4 +34,9 @@ public interface IUserQueryService
     ///     Handle a <see cref="GetUserByEmailQuery" /> to retrieve a user by email.
     /// </summary>
     Task<User?> Handle(GetUserByEmailQuery query);
+
+    /// <summary>
+    ///     Handle a <see cref="GetUsersByOrganizationIdQuery" /> to retrieve users by organization identifier.
+    /// </summary>
+    Task<IEnumerable<User>> Handle(GetUsersByOrganizationIdQuery query);
 }

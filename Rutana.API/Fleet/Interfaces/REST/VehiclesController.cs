@@ -5,6 +5,7 @@ using Rutana.API.Fleet.Domain.Model.Queries;
 using Rutana.API.Fleet.Domain.Services;
 using Rutana.API.Fleet.Interfaces.REST.Resources;
 using Rutana.API.Fleet.Interfaces.REST.Transform;
+using Rutana.API.IAM.Domain.Model.Aggregates;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Rutana.API.Fleet.Interfaces.REST;
@@ -22,6 +23,33 @@ public class VehiclesController(
     IVehicleCommandService vehicleCommandService,
     IVehicleQueryService vehicleQueryService) : ControllerBase
 {
+    /// <summary>
+    /// Get all vehicles.
+    /// </summary>
+    /// <returns>The list of vehicles.</returns>
+    [HttpGet]
+    [SwaggerOperation(
+        Summary = "Get all vehicles",
+        Description = "Get all vehicles for the current user's organization",
+        OperationId = "GetAllVehicles")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The list of vehicles", typeof(IEnumerable<VehicleResource>))]
+    public async Task<IActionResult> GetAllVehicles()
+    {
+        // Get authenticated user from HttpContext.Items (set by RequestAuthorizationMiddleware)
+        var user = HttpContext.Items["User"] as User;
+        
+        if (user == null || user.OrganizationId == null)
+        {
+            return Unauthorized("User not authenticated or not associated with an organization");
+        }
+        
+        var organizationId = user.OrganizationId.Value;
+        var getAllVehiclesQuery = new GetAllVehiclesQuery(organizationId);
+        var vehicles = await vehicleQueryService.Handle(getAllVehiclesQuery);
+        var resources = vehicles.Select(VehicleResourceFromEntityAssembler.ToResourceFromEntity);
+        return Ok(resources);
+    }
+    
     /// <summary>
     /// Get vehicle by id.
     /// </summary>
@@ -41,44 +69,6 @@ public class VehiclesController(
         if (vehicle is null) return NotFound();
         var resource = VehicleResourceFromEntityAssembler.ToResourceFromEntity(vehicle);
         return Ok(resource);
-    }
-
-    /// <summary>
-    /// Get all vehicles by organization id.
-    /// </summary>
-    /// <param name="organizationId">The organization identifier.</param>
-    /// <returns>The list of vehicles.</returns>
-    [HttpGet("organization/{organizationId:int}")]
-    [SwaggerOperation(
-        Summary = "Get vehicles by organization",
-        Description = "Get all vehicles belonging to an organization",
-        OperationId = "GetVehiclesByOrganizationId")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The list of vehicles", typeof(IEnumerable<VehicleResource>))]
-    public async Task<IActionResult> GetVehiclesByOrganizationId(int organizationId)
-    {
-        var getVehiclesByOrganizationIdQuery = new GetVehiclesByOrganizationIdQuery(organizationId);
-        var vehicles = await vehicleQueryService.Handle(getVehiclesByOrganizationIdQuery);
-        var resources = vehicles.Select(VehicleResourceFromEntityAssembler.ToResourceFromEntity);
-        return Ok(resources);
-    }
-
-    /// <summary>
-    /// Get all enabled vehicles by organization id.
-    /// </summary>
-    /// <param name="organizationId">The organization identifier.</param>
-    /// <returns>The list of enabled vehicles.</returns>
-    [HttpGet("organization/{organizationId:int}/enabled")]
-    [SwaggerOperation(
-        Summary = "Get enabled vehicles by organization",
-        Description = "Get all enabled vehicles belonging to an organization",
-        OperationId = "GetEnabledVehiclesByOrganizationId")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The list of enabled vehicles", typeof(IEnumerable<VehicleResource>))]
-    public async Task<IActionResult> GetEnabledVehiclesByOrganizationId(int organizationId)
-    {
-        var getEnabledVehiclesByOrganizationIdQuery = new GetEnabledVehiclesByOrganizationIdQuery(organizationId);
-        var vehicles = await vehicleQueryService.Handle(getEnabledVehiclesByOrganizationIdQuery);
-        var resources = vehicles.Select(VehicleResourceFromEntityAssembler.ToResourceFromEntity);
-        return Ok(resources);
     }
 
     /// <summary>
@@ -125,43 +115,24 @@ public class VehiclesController(
     }
 
     /// <summary>
-    /// Enable a vehicle.
+    /// Update a vehicle's state.
     /// </summary>
     /// <param name="vehicleId">The vehicle identifier.</param>
+    /// <param name="resource">The update vehicle state resource.</param>
     /// <returns>The updated vehicle resource.</returns>
-    [HttpPatch("{vehicleId:int}/enable")]
+    [HttpPatch("{vehicleId:int}/state")]
     [SwaggerOperation(
-        Summary = "Enable vehicle",
-        Description = "Enable a vehicle, making it available for routes",
-        OperationId = "EnableVehicle")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The vehicle was enabled", typeof(VehicleResource))]
+        Summary = "Update vehicle state",
+        Description = "Update a vehicle's state (enabled/disabled)",
+        OperationId = "UpdateVehicleState")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The vehicle state was updated", typeof(VehicleResource))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid state provided")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "The vehicle was not found")]
-    public async Task<IActionResult> EnableVehicle(int vehicleId)
+    public async Task<IActionResult> UpdateVehicleState(int vehicleId, [FromBody] UpdateVehicleStateResource resource)
     {
-        var enableVehicleCommand = new EnableVehicleCommand(vehicleId);
-        var vehicle = await vehicleCommandService.Handle(enableVehicleCommand);
-        if (vehicle is null) return NotFound();
-        var vehicleResource = VehicleResourceFromEntityAssembler.ToResourceFromEntity(vehicle);
-        return Ok(vehicleResource);
-    }
-
-    /// <summary>
-    /// Disable a vehicle.
-    /// </summary>
-    /// <param name="vehicleId">The vehicle identifier.</param>
-    /// <returns>The updated vehicle resource.</returns>
-    [HttpPatch("{vehicleId:int}/disable")]
-    [SwaggerOperation(
-        Summary = "Disable vehicle",
-        Description = "Disable a vehicle, making it unavailable for routes",
-        OperationId = "DisableVehicle")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The vehicle was disabled", typeof(VehicleResource))]
-    [SwaggerResponse(StatusCodes.Status404NotFound, "The vehicle was not found")]
-    public async Task<IActionResult> DisableVehicle(int vehicleId)
-    {
-        var disableVehicleCommand = new DisableVehicleCommand(vehicleId);
-        var vehicle = await vehicleCommandService.Handle(disableVehicleCommand);
-        if (vehicle is null) return NotFound();
+        var updateVehicleStateCommand = UpdateVehicleStateCommandFromResourceAssembler.ToCommandFromResource(vehicleId, resource);
+        var vehicle = await vehicleCommandService.Handle(updateVehicleStateCommand);
+        if (vehicle is null) return BadRequest();
         var vehicleResource = VehicleResourceFromEntityAssembler.ToResourceFromEntity(vehicle);
         return Ok(vehicleResource);
     }

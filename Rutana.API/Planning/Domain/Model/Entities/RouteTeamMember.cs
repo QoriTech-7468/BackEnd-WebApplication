@@ -1,3 +1,4 @@
+using Rutana.API.IAM.Domain.Model.ValueObject;
 using Rutana.API.Planning.Domain.Model.ValueObjects;
 
 namespace Rutana.API.Planning.Domain.Model.Entities;
@@ -13,7 +14,7 @@ public class RouteTeamMember
     public RouteTeamMember()
     {
         Id = new RouteTeamMemberId();
-        UserId = new UserId();
+        UserId = new UserId(0);
     }
 
     /// <summary>
@@ -35,7 +36,7 @@ public class RouteTeamMember
     /// Gets the user identifier of the team member.
     /// </summary>
     /// <remarks>
-    /// TODO: This references IAM bounded context (User aggregate) - currently using temporary UserId.
+    /// References IAM bounded context (User aggregate).
     /// </remarks>
     public UserId UserId { get; private set; }
 }

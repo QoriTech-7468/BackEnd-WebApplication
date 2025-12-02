@@ -39,23 +39,4 @@ public class RoutesController(
         var resource = RouteResourceFromEntityAssembler.ToResourceFromEntity(route);
         return Ok(resource);
     }
-
-    /// <summary>
-    /// Get all routes by organization id.
-    /// </summary>
-    /// <param name="organizationId">The organization identifier.</param>
-    /// <returns>The list of routes.</returns>
-    [HttpGet("organization/{organizationId:int}")]
-    [SwaggerOperation(
-        Summary = "Get routes by organization",
-        Description = "Get all published routes belonging to an organization",
-        OperationId = "GetRoutesByOrganizationId")]
-    [SwaggerResponse(StatusCodes.Status200OK, "The list of routes", typeof(IEnumerable<RouteResource>))]
-    public async Task<IActionResult> GetRoutesByOrganizationId(int organizationId)
-    {
-        var getRoutesByOrganizationIdQuery = new GetRoutesByOrganizationIdQuery(organizationId);
-        var routes = await routeQueryService.Handle(getRoutesByOrganizationIdQuery);
-        var resources = routes.Select(RouteResourceFromEntityAssembler.ToResourceFromEntity);
-        return Ok(resources);
-    }
 }

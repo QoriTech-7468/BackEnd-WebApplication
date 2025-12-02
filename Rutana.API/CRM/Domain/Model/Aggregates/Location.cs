@@ -5,7 +5,7 @@ namespace Rutana.API.CRM.Domain.Model.Aggregates;
 
 /// <summary>
 /// Location Aggregate Root.
-/// Represents a client location (delivery/pickup point) in the CRM system.
+/// Represents a physical location associated with a client.
 /// </summary>
 public class Location
 {
@@ -14,23 +14,29 @@ public class Location
     /// </summary>
     public Location()
     {
-        Name = new LocationName();
-        ClientId = new ClientId();
-        Proximity = Proximity.Medium;
+        Address = new Address();
+        Latitude = new Latitude();
+        Longitude = new Longitude();
+        Proximity = Proximity.Close;
+        ClientId = new ClientId(0);
         IsEnabled = true;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Location"/> class with specified parameters.
     /// </summary>
-    /// <param name="name">The location name.</param>
+    /// <param name="address">The location address.</param>
+    /// <param name="latitude">The latitude coordinate.</param>
+    /// <param name="longitude">The longitude coordinate.</param>
+    /// <param name="proximity">The proximity information.</param>
     /// <param name="clientId">The client identifier.</param>
-    /// <param name="proximity">The proximity level.</param>
-    private Location(LocationName name, ClientId clientId, Proximity proximity)
+    private Location(Address address, Latitude latitude, Longitude longitude, Proximity proximity, ClientId clientId)
     {
-        Name = name;
-        ClientId = clientId;
+        Address = address;
+        Latitude = latitude;
+        Longitude = longitude;
         Proximity = proximity;
+        ClientId = clientId;
         IsEnabled = true;
     }
 
@@ -39,9 +45,11 @@ public class Location
     /// </summary>
     /// <param name="command">The register location command.</param>
     public Location(RegisterLocationCommand command) : this(
-        LocationName.Create(command.Name),
-        new ClientId(command.ClientId),
-        command.Proximity)
+        Address.Create(command.Address),
+        Latitude.Create(command.Latitude),
+        Longitude.Create(command.Longitude),
+        command.Proximity,
+        new ClientId(command.ClientId))
     {
     }
 
@@ -51,19 +59,29 @@ public class Location
     public LocationId Id { get; internal set; } = new LocationId(0);
 
     /// <summary>
-    /// Gets the name of the location.
+    /// Gets the location address.
     /// </summary>
-    public LocationName Name { get; private set; }
+    public Address Address { get; private set; }
+
+    /// <summary>
+    /// Gets the latitude coordinate.
+    /// </summary>
+    public Latitude Latitude { get; private set; }
+
+    /// <summary>
+    /// Gets the longitude coordinate.
+    /// </summary>
+    public Longitude Longitude { get; private set; }
+
+    /// <summary>
+    /// Gets the proximity information.
+    /// </summary>
+    public Proximity Proximity { get; private set; }
 
     /// <summary>
     /// Gets the client identifier that owns this location.
     /// </summary>
     public ClientId ClientId { get; private set; }
-
-    /// <summary>
-    /// Gets the proximity level of the location.
-    /// </summary>
-    public Proximity Proximity { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether the location is enabled.
@@ -92,6 +110,49 @@ public class Location
             throw new InvalidOperationException("Location is already disabled.");
 
         IsEnabled = false;
+    }
+
+    /// <summary>
+    /// Updates the location state based on a command.
+    /// </summary>
+    /// <param name="command">The update location state command.</param>
+    /// <exception cref="ArgumentException">Thrown when an invalid state is provided.</exception>
+    public void UpdateState(UpdateLocationStateCommand command)
+    {
+        if (command.State.Equals("enabled", StringComparison.OrdinalIgnoreCase))
+        {
+            Enable();
+        }
+        else if (command.State.Equals("disabled", StringComparison.OrdinalIgnoreCase))
+        {
+            Disable();
+        }
+        else
+        {
+            throw new ArgumentException($"Invalid state: {command.State}. Valid states are 'enabled' or 'disabled'.");
+        }
+    }
+
+    /// <summary>
+    /// Updates the location based on a command.
+    /// </summary>
+    /// <param name="command">The update location command.</param>
+    public void Update(UpdateLocationCommand command)
+    {
+        Address = Address.Create(command.Address);
+        Latitude = Latitude.Create(command.Latitude);
+        Longitude = Longitude.Create(command.Longitude);
+        Proximity = command.Proximity;
+        ClientId = new ClientId(command.ClientId);
+        
+        if (command.IsEnabled && !IsEnabled)
+        {
+            Enable();
+        }
+        else if (!command.IsEnabled && IsEnabled)
+        {
+            Disable();
+        }
     }
 
     /// <summary>

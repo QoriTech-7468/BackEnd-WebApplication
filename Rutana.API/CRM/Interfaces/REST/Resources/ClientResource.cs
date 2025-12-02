@@ -4,11 +4,9 @@ namespace Rutana.API.CRM.Interfaces.REST.Resources;
 /// Client resource for REST API responses.
 /// </summary>
 /// <param name="Id">The unique identifier of the client.</param>
-/// <param name="CompanyName">The company name of the client.</param>
-/// <param name="IsEnabled">Indicates whether the client is enabled.</param>
+/// <param name="Name">The name of the client.</param>
+/// <param name="IsActive">Indicates whether the client is active.</param>
 public record ClientResource(
-    
     int Id,
-
-    string CompanyName,
-    bool IsEnabled);
+    string Name,
+    bool IsActive);

@@ -69,18 +69,35 @@ public static class ModelBuilderExtensions
                 value => new LocationId(value))
             .ValueGeneratedOnAdd();
 
-        // LocationName as Owned Type
-        builder.Entity<Location>().OwnsOne(l => l.Name, ln =>
+        // Address as Owned Type
+        builder.Entity<Location>().OwnsOne(l => l.Address, a =>
         {
-            ln.WithOwner().HasForeignKey("Id");
-            ln.Property(name => name.Value)
-                .HasColumnName("Name")
+            a.WithOwner().HasForeignKey("Id");
+            a.Property(addr => addr.Value)
+                .HasColumnName("Address")
                 .IsRequired()
-                .HasMaxLength(200);
+                .HasMaxLength(500);
         });
 
+        // Latitude as Owned Type
+        builder.Entity<Location>().OwnsOne(l => l.Latitude, lat =>
+        {
+            lat.WithOwner().HasForeignKey("Id");
+            lat.Property(l => l.Value)
+                .HasColumnName("Latitude")
+                .IsRequired()
+                .HasMaxLength(50);
+        });
 
-        // ClientId as Owned Type
+        // Longitude as Owned Type
+        builder.Entity<Location>().OwnsOne(l => l.Longitude, lon =>
+        {
+            lon.WithOwner().HasForeignKey("Id");
+            lon.Property(l => l.Value)
+                .HasColumnName("Longitude")
+                .IsRequired()
+                .HasMaxLength(50);
+        });
 
         // ClientId as property with conversion
 

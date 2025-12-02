@@ -16,13 +16,21 @@ public static class RegisterLocationCommandFromResourceAssembler
     /// <returns>The RegisterLocationCommand.</returns>
     public static RegisterLocationCommand ToCommandFromResource(RegisterLocationResource resource)
     {
-        // Parse the proximity string to enum
-        if (!Enum.TryParse<Proximity>(resource.Proximity, true, out var proximity))
-            throw new ArgumentException($"Invalid proximity value: {resource.Proximity}");
+        // Parse the proximity string to enum (handle lowercase: close, mid, far)
+        var proximityString = resource.Proximity.ToLowerInvariant();
+        Proximity proximity = proximityString switch
+        {
+            "close" => Proximity.Close,
+            "mid" => Proximity.Mid,
+            "far" => Proximity.Far,
+            _ => throw new ArgumentException($"Invalid proximity value: {resource.Proximity}. Valid values are: close, mid, far")
+        };
 
         return new RegisterLocationCommand(
             resource.ClientId,
-            resource.Name,
+            resource.Address,
+            resource.Latitude,
+            resource.Longitude,
             proximity);
     }
 }

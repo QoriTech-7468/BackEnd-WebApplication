@@ -15,12 +15,19 @@ public class LocationQueryService(ILocationRepository locationRepository) : ILoc
     /// <inheritdoc />
     public async Task<IEnumerable<Location>> Handle(GetLocationsByClientIdQuery query)
     {
-        return await locationRepository.FindByClientIdAsync(query.ClientId.Value);
+        //  Pasamos el ClientId completo, no solo el Value
+        return await locationRepository.FindByClientIdAsync(query.ClientId);
     }
 
     /// <inheritdoc />
     public async Task<Location?> Handle(GetLocationByIdQuery query)
     {
         return await locationRepository.FindByIdAsync(query.LocationId.Value);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<Location>> Handle(GetAllLocationsQuery query)
+    {
+        return await locationRepository.FindAllAsync(query.IsActive, query.ClientId);
     }
 }

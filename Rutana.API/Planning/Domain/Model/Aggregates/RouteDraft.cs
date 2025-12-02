@@ -1,5 +1,6 @@
 using Rutana.API.CRM.Domain.Model.ValueObjects;
 using Rutana.API.Fleet.Domain.Model.ValueObjects;
+using Rutana.API.IAM.Domain.Model.ValueObject;
 using Rutana.API.Planning.Domain.Model.Commands;
 using Rutana.API.Planning.Domain.Model.Entities;
 using Rutana.API.Planning.Domain.Model.ValueObjects;
@@ -71,7 +72,7 @@ public class RouteDraft
     /// Gets the vehicle identifier assigned to this route.
     /// </summary>
     /// <remarks>
-    /// TODO: References Fleet bounded context (Vehicle aggregate).
+    /// References Fleet bounded context (Vehicle aggregate).
     /// </remarks>
     public VehicleId? VehicleId { get; private set; }
 
@@ -164,7 +165,7 @@ public class RouteDraft
     /// <param name="userId">The user identifier to assign.</param>
     public void AssignMember(UserId userId)
     {
-        if (_teamMembers.Any(tm => tm.UserId.Value == userId.Value))
+        if (_teamMembers.Any(tm => tm.UserId.Id == userId.Id))
         {
             throw new InvalidOperationException("User is already assigned to this route.");
         }
@@ -187,7 +188,6 @@ public class RouteDraft
     /// <exception cref="InvalidOperationException">Thrown when validation fails.</exception>
     public void ValidateForPublishing()
     {
-        // ✅ Cambio: Verificar si VehicleId es null en lugar de usar HasValue
         if (VehicleId == null)
         {
             throw new InvalidOperationException("Cannot publish route without assigned vehicle.");

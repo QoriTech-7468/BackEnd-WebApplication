@@ -6,14 +6,14 @@ namespace Rutana.API.CRM.Domain.Model.ValueObjects;
 public enum Proximity
 {
     /// <summary>
-    /// Near proximity - close to the organization.
+    /// Close proximity - close to the organization.
     /// </summary>
-    Near,
+    Close,
 
     /// <summary>
-    /// Medium proximity - moderate distance.
+    /// Mid proximity - moderate distance.
     /// </summary>
-    Medium,
+    Mid,
 
     /// <summary>
     /// Far proximity - distant from the organization.

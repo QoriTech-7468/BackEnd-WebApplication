@@ -109,4 +109,26 @@ public class User(
         Role = role;
         return this;
     }
+
+    /// <summary>
+    ///     Updates the user's role.
+    /// </summary>
+    /// <param name="role">The new role.</param>
+    /// <returns>The updated <see cref="User" /> instance.</returns>
+    public User UpdateRole(UserRole role)
+    {
+        Role = role;
+        return this;
+    }
+
+    /// <summary>
+    ///     Removes the user from the organization (sets role to NotAssigned and OrganizationId to null).
+    /// </summary>
+    /// <returns>The updated <see cref="User" /> instance.</returns>
+    public User RemoveFromOrganization()
+    {
+        Role = UserRole.NotAssigned;
+        OrganizationId = null;
+        return this;
+    }
 }

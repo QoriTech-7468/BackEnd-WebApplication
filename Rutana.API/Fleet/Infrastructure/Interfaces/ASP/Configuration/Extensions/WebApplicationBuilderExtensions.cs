@@ -1,8 +1,10 @@
+using Rutana.API.Fleet.Application.ACL.Services;
 using Rutana.API.Fleet.Application.Internal.CommandServices;
 using Rutana.API.Fleet.Application.Internal.QueryServices;
 using Rutana.API.Fleet.Domain.Repositories;
 using Rutana.API.Fleet.Domain.Services;
 using Rutana.API.Fleet.Infrastructure.Persistence.EFC.Repositories;
+using Rutana.API.Fleet.Interfaces.ACL;
 
 namespace Rutana.API.Fleet.Infrastructure.Interfaces.ASP.Configuration.Extensions;
 
@@ -23,5 +25,8 @@ public static class WebApplicationBuilderExtensions
         // Fleet Bounded Context - Services
         builder.Services.AddScoped<IVehicleCommandService, VehicleCommandService>();
         builder.Services.AddScoped<IVehicleQueryService, VehicleQueryService>();
+
+        // Fleet Bounded Context - ACL (Anti-Corruption Layer)
+        builder.Services.AddScoped<IFleetContextFacade, FleetContextFacade>();
     }
 }

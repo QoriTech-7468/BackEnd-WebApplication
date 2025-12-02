@@ -16,16 +16,16 @@ public interface ILocationCommandService
     Task<Location?> Handle(RegisterLocationCommand command);
 
     /// <summary>
-    /// Handles the enable location command.
+    /// Handles the update location state command.
     /// </summary>
-    /// <param name="command">The enable location command.</param>
-    /// <returns>The enabled location.</returns>
-    Task<Location?> Handle(EnableLocationCommand command);
+    /// <param name="command">The update location state command.</param>
+    /// <returns>The updated location.</returns>
+    Task<Location?> Handle(UpdateLocationStateCommand command);
 
     /// <summary>
-    /// Handles the disable location command.
+    /// Handles the update location command.
     /// </summary>
-    /// <param name="command">The disable location command.</param>
-    /// <returns>The disabled location.</returns>
-    Task<Location?> Handle(DisableLocationCommand command);
+    /// <param name="command">The update location command.</param>
+    /// <returns>The updated location.</returns>
+    Task<Location?> Handle(UpdateLocationCommand command);
 }

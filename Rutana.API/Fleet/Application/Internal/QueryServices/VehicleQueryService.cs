@@ -33,4 +33,11 @@ public class VehicleQueryService(IVehicleRepository vehicleRepository)
         var organizationId = new OrganizationId(query.OrganizationId);
         return await vehicleRepository.FindEnabledByOrganizationIdAsync(organizationId);
     }
+    
+    /// <inheritdoc />
+    public async Task<IEnumerable<Vehicle>> Handle(GetAllVehiclesQuery query)
+    {
+        var organizationId = new OrganizationId(query.OrganizationId);
+        return await vehicleRepository.FindByOrganizationIdAsync(organizationId);
+    }
 }

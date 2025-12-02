@@ -87,6 +87,45 @@ public class Client
     }
 
     /// <summary>
+    /// Updates the client state based on a command.
+    /// </summary>
+    /// <param name="command">The update client state command.</param>
+    /// <exception cref="ArgumentException">Thrown when an invalid state is provided.</exception>
+    public void UpdateState(UpdateClientStateCommand command)
+    {
+        if (command.State.Equals("enabled", StringComparison.OrdinalIgnoreCase))
+        {
+            Enable();
+        }
+        else if (command.State.Equals("disabled", StringComparison.OrdinalIgnoreCase))
+        {
+            Disable();
+        }
+        else
+        {
+            throw new ArgumentException($"Invalid state: {command.State}. Valid states are 'enabled' or 'disabled'.");
+        }
+    }
+
+    /// <summary>
+    /// Updates the client based on a command.
+    /// </summary>
+    /// <param name="command">The update client command.</param>
+    public void Update(UpdateClientCommand command)
+    {
+        CompanyName = CompanyName.Create(command.CompanyName);
+        
+        if (command.IsEnabled && !IsEnabled)
+        {
+            Enable();
+        }
+        else if (!command.IsEnabled && IsEnabled)
+        {
+            Disable();
+        }
+    }
+
+    /// <summary>
     /// Factory method to create a new client.
     /// </summary>
     /// <param name="command">The register client command.</param>

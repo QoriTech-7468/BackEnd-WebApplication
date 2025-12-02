@@ -17,6 +17,6 @@ public static class RouteTeamMemberResourceFromEntityAssembler
     {
         return new RouteTeamMemberResource(
             entity.Id.Value,
-            entity.UserId.Value);
+            entity.UserId.Id);
     }
 }

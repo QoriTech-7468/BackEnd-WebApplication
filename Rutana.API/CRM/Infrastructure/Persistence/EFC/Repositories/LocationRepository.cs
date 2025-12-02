@@ -8,35 +8,57 @@ using Rutana.API.Shared.Infrastructure.Persistence.EFC.Repositories;
 namespace Rutana.API.CRM.Infrastructure.Persistence.EFC.Repositories;
 
 /// <summary>
-/// Repository implementation for managing Location aggregate persistence.
+/// Location repository implementation using Entity Framework Core.
 /// </summary>
-/// <param name="context">The database context.</param>
-public class LocationRepository(AppDbContext context) : BaseRepository<Location>(context), ILocationRepository
+/// <param name="context">The application database context.</param>
+public class LocationRepository(AppDbContext context) 
+    : BaseRepository<Location>(context), ILocationRepository
 {
     /// <inheritdoc />
-    public override async Task<Location?> FindByIdAsync(int id)
+    public override async Task<Location?> FindByIdAsync(int locationId)
     {
         // Convert int to LocationId and use FindAsync which works correctly with value object primary keys
-        var locationId = new LocationId(id);
-        return await Context.Set<Location>().FindAsync(locationId);
+        var locationIdVo = new LocationId(locationId);
+        return await Context.Set<Location>().FindAsync(locationIdVo);
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<Location>> FindByClientIdAsync(int clientId)
+    public async Task<IEnumerable<Location>> FindByClientIdAsync(ClientId clientId)
     {
         // ClientId has HasConversion - must compare the value object directly, not .Value
-        var clientIdVo = new ClientId(clientId);
         return await Context.Set<Location>()
-            .Where(l => l.ClientId == clientIdVo)
+            .Where(l => l.ClientId == clientId)
             .ToListAsync();
     }
 
     /// <inheritdoc />
-    public async Task<bool> ExistsByNameAndClientIdAsync(string name, int clientId)
+    public async Task<bool> ExistsByLocationNameAndClientIdAsync(string locationName, int clientId)
     {
+        // Note: This method is deprecated since we now use Address instead of Name
+        // Keeping for backward compatibility but checking Address instead
         // ClientId has HasConversion - must compare the value object directly, not .Value
         var clientIdVo = new ClientId(clientId);
         return await Context.Set<Location>()
-            .AnyAsync(l => l.Name.Value == name && l.ClientId == clientIdVo);
+            .AnyAsync(l => l.Address.Value == locationName && l.ClientId == clientIdVo);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<Location>> FindAllAsync(bool? isActive = null, int? clientId = null)
+    {
+        var query = Context.Set<Location>().AsQueryable();
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(l => l.IsEnabled == isActive.Value);
+        }
+
+        if (clientId.HasValue)
+        {
+            // ClientId has HasConversion - must compare the value object directly, not .Value
+            var clientIdVo = new ClientId(clientId.Value);
+            query = query.Where(l => l.ClientId == clientIdVo);
+        }
+
+        return await query.ToListAsync();
     }
 }

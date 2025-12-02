@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Rutana.API.CRM.Domain.Model.Aggregates;
 using Rutana.API.Fleet.Domain.Model.Aggregates;
 using Rutana.API.Fleet.Domain.Model.ValueObjects;
+using Rutana.API.IAM.Domain.Model.Aggregates;
+using Rutana.API.IAM.Domain.Model.ValueObject;
 using Rutana.API.Planning.Domain.Model.Entities;
 using Rutana.API.Planning.Domain.Model.ValueObjects;
 using Rutana.API.Shared.Domain.Model.ValueObjects;
@@ -225,13 +227,15 @@ public static class ModelBuilderExtensions
             .IsRequired()
             .ValueGeneratedOnAdd();
 
-        // UserId as property with conversion
-        // TODO: When IAM bounded context is implemented, add relationship with User aggregate
+        // UserId as property with conversion - References IAM bounded context (User aggregate)
         teamMember.Property(tm => tm.UserId)
             .HasConversion(
-                id => id.Value,
+                id => id.Id,
                 value => new UserId(value))
             .HasColumnName("UserId")
             .IsRequired();
+
+        // NO relationship with User - cross-bounded-context FK constraint
+        // UserId is stored but without FK constraint for bounded context independence
     }
 }

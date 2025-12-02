@@ -1,5 +1,7 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
+using Rutana.API.IAM.Domain.Model.Aggregates;
+using Rutana.API.IAM.Domain.Model.Enums;
 using Rutana.API.IAM.Domain.Model.Queries;
 using Rutana.API.IAM.Domain.Services;
 using Rutana.API.IAM.Infrastructure.Pipeline.Middleware.Attributes;
@@ -25,6 +27,11 @@ public class UsersController: ControllerBase
     {
         this.userQueryService = userQueryService;
         this.userCommandService = userCommandService;
+    }
+
+    private User? GetAuthenticatedUser()
+    {
+        return HttpContext.Items["User"] as User;
     }
     
     [AllowAnonymous]
@@ -77,5 +84,131 @@ public class UsersController: ControllerBase
         if (user == null) return NotFound();
         var userResource = UserByEmailResourceFromEntityAssembler.ToResourceFromEntity(user);
         return Ok(userResource);
+    }
+
+    [HttpGet("organization")]
+    [SwaggerOperation(Summary = "Get users by organization", Description = "Get all users from the authenticated user's organization", OperationId = "GetUsersByOrganization")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The users were found", typeof(IEnumerable<UserResource>))]
+    [SwaggerResponse(StatusCodes.Status401Unauthorized, "User not authenticated or has no organization")]
+    public async Task<IActionResult> GetUsersByOrganization()
+    {
+        var authenticatedUser = GetAuthenticatedUser();
+        if (authenticatedUser == null || authenticatedUser.OrganizationId == null)
+        {
+            return Unauthorized();
+        }
+
+        var query = new GetUsersByOrganizationIdQuery(authenticatedUser.OrganizationId.Value);
+        var users = await userQueryService.Handle(query);
+        var userResources = users.Select(UserResourceFromEntityAssembler.ToResourceFromEntity);
+        return Ok(userResources);
+    }
+
+    [HttpPut("{id}/role")]
+    [SwaggerOperation(Summary = "Change user role", Description = "Change a user's role (Admin or Owner only)", OperationId = "ChangeUserRole")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The user role was changed", typeof(UserResource))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
+    [SwaggerResponse(StatusCodes.Status403Forbidden, "Only Admin or Owner can change user roles")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "User not found")]
+    public async Task<IActionResult> ChangeUserRole(int id, [FromBody] ChangeUserRoleResource resource)
+    {
+        var authenticatedUser = GetAuthenticatedUser();
+        if (authenticatedUser == null || authenticatedUser.OrganizationId == null)
+        {
+            return Unauthorized();
+        }
+
+        // Validar que el usuario tenga role Admin u Owner
+        if (authenticatedUser.Role != UserRole.Admin && authenticatedUser.Role != UserRole.Owner)
+        {
+            return Forbid("Only Admin or Owner can change user roles");
+        }
+
+        try
+        {
+            // Obtener el usuario a modificar
+            var getUserByIdQuery = new GetUserByIdQuery(id);
+            var userToModify = await userQueryService.Handle(getUserByIdQuery);
+            if (userToModify == null)
+            {
+                return NotFound();
+            }
+
+            // Validar que el usuario pertenece a la misma organización
+            if (userToModify.OrganizationId == null || userToModify.OrganizationId.Value != authenticatedUser.OrganizationId.Value)
+            {
+                return Forbid("You can only change roles of users from your own organization");
+            }
+
+            // Validar que el usuario no sea Owner
+            if (userToModify.Role == UserRole.Owner)
+            {
+                return Forbid("Cannot change the role of an Owner");
+            }
+
+            var command = ChangeUserRoleCommandFromResourceAssembler.ToCommandFromResource(id, resource);
+            var updatedUser = await userCommandService.Handle(command);
+            var userResource = UserResourceFromEntityAssembler.ToResourceFromEntity(updatedUser);
+            
+            return Ok(userResource);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(new { message = e.Message });
+        }
+    }
+
+    [HttpDelete("{id}/organization")]
+    [SwaggerOperation(Summary = "Remove user from organization", Description = "Remove a user from the organization (Admin or Owner only)", OperationId = "RemoveUserFromOrganization")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The user was removed from the organization", typeof(UserResource))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
+    [SwaggerResponse(StatusCodes.Status403Forbidden, "Only Admin or Owner can remove users from organization")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "User not found")]
+    public async Task<IActionResult> RemoveUserFromOrganization(int id)
+    {
+        var authenticatedUser = GetAuthenticatedUser();
+        if (authenticatedUser == null || authenticatedUser.OrganizationId == null)
+        {
+            return Unauthorized();
+        }
+
+        // Validar que el usuario tenga role Admin u Owner
+        if (authenticatedUser.Role != UserRole.Admin && authenticatedUser.Role != UserRole.Owner)
+        {
+            return Forbid("Only Admin or Owner can remove users from organization");
+        }
+
+        try
+        {
+            // Obtener el usuario a eliminar
+            var getUserByIdQuery = new GetUserByIdQuery(id);
+            var userToRemove = await userQueryService.Handle(getUserByIdQuery);
+            if (userToRemove == null)
+            {
+                return NotFound();
+            }
+
+            // Validar que el usuario pertenece a la misma organización
+            if (userToRemove.OrganizationId == null || userToRemove.OrganizationId.Value != authenticatedUser.OrganizationId.Value)
+            {
+                return Forbid("You can only remove users from your own organization");
+            }
+
+            // Validar que el usuario no sea Owner
+            if (userToRemove.Role == UserRole.Owner)
+            {
+                return Forbid("Cannot remove an Owner from the organization");
+            }
+
+            var command = new Domain.Model.Commands.RemoveUserFromOrganizationCommand(id);
+            var updatedUser = await userCommandService.Handle(command);
+            var userResource = UserResourceFromEntityAssembler.ToResourceFromEntity(updatedUser);
+            
+            return Ok(userResource);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(new { message = e.Message });
+        }
     }
 }
