@@ -23,6 +23,37 @@ public class VehiclesController(
     IVehicleQueryService vehicleQueryService) : ControllerBase
 {
     /// <summary>
+    /// Get all vehicles.
+    /// </summary>
+    /// <returns>The list of vehicles.</returns>
+    [HttpGet]
+    [SwaggerOperation(
+        Summary = "Get all vehicles",
+        Description = "Get all vehicles for the current user's organization",
+        OperationId = "GetAllVehicles")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The list of vehicles", typeof(IEnumerable<VehicleResource>))]
+    public async Task<IActionResult> GetAllVehicles()
+    {
+        var organizationIdString = User.Claims.FirstOrDefault(c => 
+            c.Type.EndsWith("sid", StringComparison.OrdinalIgnoreCase) || 
+            c.Type.Equals("organizationId", StringComparison.OrdinalIgnoreCase)
+        )?.Value;
+        
+        if (string.IsNullOrEmpty(organizationIdString)) 
+        {
+            Console.WriteLine("Error: No se encontró organizationId ni sid. Claims disponibles:");
+            foreach (var claim in User.Claims) Console.WriteLine($"- {claim.Type}: {claim.Value}");
+            
+            return Unauthorized();
+        }
+        var organizationId = int.Parse(organizationIdString);
+        var getAllVehiclesQuery = new GetAllVehiclesQuery(organizationId);
+        var vehicles = await vehicleQueryService.Handle(getAllVehiclesQuery);
+        var resources = vehicles.Select(VehicleResourceFromEntityAssembler.ToResourceFromEntity);
+        return Ok(resources);
+    }
+    
+    /// <summary>
     /// Get vehicle by id.
     /// </summary>
     /// <param name="vehicleId">The vehicle identifier.</param>

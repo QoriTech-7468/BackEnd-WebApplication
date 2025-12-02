@@ -28,4 +28,6 @@ public interface IVehicleQueryService
     /// <param name="query">The <see cref="GetEnabledVehiclesByOrganizationIdQuery"/> query to handle.</param>
     /// <returns>A collection of all enabled vehicles belonging to the organization.</returns>
     Task<IEnumerable<Vehicle>> Handle(GetEnabledVehiclesByOrganizationIdQuery query);
+    
+    Task<IEnumerable<Vehicle>> Handle(GetAllVehiclesQuery query);
 }
