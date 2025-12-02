@@ -64,4 +64,19 @@ public class RouteRepository(AppDbContext context)
                 r.Status == RouteStatus.Finished)
             .ToListAsync();
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<RouteAggregate>> FindByExecutionDateAsync(OrganizationId organizationId, DateTime executionDate)
+    {
+        // Compare only the date part (ignore time)
+        // Since ExecutionDate is stored as 'date' type in DB, we can compare directly
+        // Normalize the input date to ensure only date part is used
+        // OrganizationId has HasConversion - must compare the value object directly, not .Value
+        var dateOnly = executionDate.Date;
+        return await Context.Set<RouteAggregate>()
+            .Where(r => 
+                r.OrganizationId == organizationId &&
+                r.ExecutionDate.Date == dateOnly.Date)
+            .ToListAsync();
+    }
 }

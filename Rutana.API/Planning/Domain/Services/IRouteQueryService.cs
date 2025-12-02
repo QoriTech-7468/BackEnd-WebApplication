@@ -38,4 +38,18 @@ public interface IRouteQueryService
     /// <param name="query">The <see cref="GetRouteDraftsByOrganizationIdQuery"/> query to handle.</param>
     /// <returns>A collection of all route drafts belonging to the organization.</returns>
     Task<IEnumerable<RouteDraftAggregate>> Handle(GetRouteDraftsByOrganizationIdQuery query);
+
+    /// <summary>
+    /// Handles the get route drafts by execution date query.
+    /// </summary>
+    /// <param name="query">The <see cref="GetRouteDraftsByExecutionDateQuery"/> query to handle.</param>
+    /// <returns>A collection of route drafts for the specified execution date.</returns>
+    Task<IEnumerable<RouteDraftAggregate>> Handle(GetRouteDraftsByExecutionDateQuery query);
+
+    /// <summary>
+    /// Handles the get routes by execution date query.
+    /// </summary>
+    /// <param name="query">The <see cref="GetRoutesByExecutionDateQuery"/> query to handle.</param>
+    /// <returns>A collection of routes for the specified execution date.</returns>
+    Task<IEnumerable<RouteAggregate>> Handle(GetRoutesByExecutionDateQuery query);
 }

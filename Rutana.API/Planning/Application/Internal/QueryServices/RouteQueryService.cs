@@ -43,4 +43,18 @@ public class RouteQueryService(
         var organizationId = new OrganizationId(query.OrganizationId);
         return await routeDraftRepository.FindByOrganizationIdAsync(organizationId);
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<RouteDraftAggregate>> Handle(GetRouteDraftsByExecutionDateQuery query)
+    {
+        var organizationId = new OrganizationId(query.OrganizationId);
+        return await routeDraftRepository.FindByExecutionDateAsync(organizationId, query.ExecutionDate);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<RouteAggregate>> Handle(GetRoutesByExecutionDateQuery query)
+    {
+        var organizationId = new OrganizationId(query.OrganizationId);
+        return await routeRepository.FindByExecutionDateAsync(organizationId, query.ExecutionDate);
+    }
 }
