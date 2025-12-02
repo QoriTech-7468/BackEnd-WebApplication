@@ -25,8 +25,7 @@ public class RouteDraft
         OrganizationId = new OrganizationId(0);
         ColorCode = new ColorCode();
         VehicleId = null;
-        StartedAt = null;
-        EndedAt = null;
+        ExecutionDate = DateTime.UtcNow.Date;
     }
 
     /// <summary>
@@ -34,13 +33,13 @@ public class RouteDraft
     /// </summary>
     /// <param name="organizationId">The organization identifier.</param>
     /// <param name="colorCode">The color code for route identification.</param>
-    private RouteDraft(OrganizationId organizationId, ColorCode colorCode)
+    /// <param name="executionDate">The date when the route will be executed.</param>
+    private RouteDraft(OrganizationId organizationId, ColorCode colorCode, DateTime executionDate)
     {
         OrganizationId = organizationId;
         ColorCode = colorCode;
         VehicleId = null;
-        StartedAt = null;
-        EndedAt = null;
+        ExecutionDate = executionDate.Date; // Store only the date part
     }
 
     /// <summary>
@@ -49,7 +48,8 @@ public class RouteDraft
     /// <param name="command">The create route draft command.</param>
     public RouteDraft(CreateRouteDraftCommand command) : this(
         new OrganizationId(command.OrganizationId),
-        ColorCode.Create(command.ColorCode))
+        ColorCode.Create(command.ColorCode),
+        command.ExecutionDate)
     {
     }
 
@@ -77,14 +77,14 @@ public class RouteDraft
     public VehicleId? VehicleId { get; private set; }
 
     /// <summary>
-    /// Gets the planned start time for the route.
+    /// Gets the date when the route will be executed.
     /// </summary>
-    public DateTime? StartedAt { get; private set; }
-
-    /// <summary>
-    /// Gets the planned end time for the route.
-    /// </summary>
-    public DateTime? EndedAt { get; private set; }
+    /// <remarks>
+    /// This date is used for planning and filtering routes by execution date.
+    /// Only the date part is stored (time is ignored).
+    /// StartedAt and EndedAt are only available in Route (published route), not in RouteDraft.
+    /// </remarks>
+    public DateTime ExecutionDate { get; private set; }
 
     /// <summary>
     /// Gets the list of deliveries for this route.
@@ -114,14 +114,10 @@ public class RouteDraft
             VehicleId = new VehicleId(command.VehicleId.Value);
         }
 
-        // Update start/end times
-        StartedAt = command.StartedAt;
-        EndedAt = command.EndedAt;
-
-        // Validate that EndedAt is after StartedAt if both are provided
-        if (StartedAt.HasValue && EndedAt.HasValue && EndedAt.Value <= StartedAt.Value)
+        // Update execution date if provided
+        if (command.ExecutionDate.HasValue)
         {
-            throw new InvalidOperationException("End time must be after start time.");
+            ExecutionDate = command.ExecutionDate.Value.Date; // Store only the date part
         }
 
         // Update deliveries (clear and add new ones)
@@ -130,7 +126,7 @@ public class RouteDraft
         {
             foreach (var locationId in command.LocationIds)
             {
-                _deliveries.Add(new Delivery(new LocationId(locationId)));
+                _deliveries.Add(new Delivery(new LocationId(locationId), ExecutionDate));
             }
         }
 
@@ -156,7 +152,7 @@ public class RouteDraft
             throw new InvalidOperationException("Location is already added to this route.");
         }
 
-        _deliveries.Add(new Delivery(locationId));
+        _deliveries.Add(new Delivery(locationId, ExecutionDate));
     }
 
     /// <summary>
@@ -196,11 +192,6 @@ public class RouteDraft
         if (!_deliveries.Any())
         {
             throw new InvalidOperationException("Cannot publish route without deliveries.");
-        }
-
-        if (!StartedAt.HasValue)
-        {
-            throw new InvalidOperationException("Cannot publish route without start time.");
         }
     }
 

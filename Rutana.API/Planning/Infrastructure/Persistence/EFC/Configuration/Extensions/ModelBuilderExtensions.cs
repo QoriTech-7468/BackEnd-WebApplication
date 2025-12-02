@@ -63,14 +63,11 @@ public static class ModelBuilderExtensions
             .HasColumnName("VehicleId")
             .IsRequired(false);
 
-        // DateTime properties
-        routeDraft.Property(rd => rd.StartedAt)
-            .HasColumnName("StartedAt")
-            .IsRequired(false);
-
-        routeDraft.Property(rd => rd.EndedAt)
-            .HasColumnName("EndedAt")
-            .IsRequired(false);
+        // ExecutionDate as date property (date only, no time)
+        routeDraft.Property(rd => rd.ExecutionDate)
+            .HasColumnName("ExecutionDate")
+            .IsRequired()
+            .HasColumnType("date");
 
         // Relationships
         routeDraft.HasOne<Organization>()
@@ -126,6 +123,12 @@ public static class ModelBuilderExtensions
                 value => new VehicleId(value))
             .HasColumnName("VehicleId")
             .IsRequired();
+
+        // ExecutionDate as date property (date only, no time)
+        route.Property(r => r.ExecutionDate)
+            .HasColumnName("ExecutionDate")
+            .IsRequired()
+            .HasColumnType("date");
 
         // DateTime properties
         route.Property(r => r.StartedAt)
@@ -186,6 +189,12 @@ public static class ModelBuilderExtensions
                 value => new CRM.Domain.Model.ValueObjects.LocationId(value))
             .HasColumnName("LocationId")
             .IsRequired();
+
+        // ExecutionDate as date property (date only, no time)
+        delivery.Property(d => d.ExecutionDate)
+            .HasColumnName("ExecutionDate")
+            .IsRequired()
+            .HasColumnType("date");
 
         // Status enum as string
         delivery.Property(d => d.Status)

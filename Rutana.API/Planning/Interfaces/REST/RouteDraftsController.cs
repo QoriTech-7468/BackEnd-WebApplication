@@ -1,5 +1,6 @@
 using System.Net.Mime;
 using Microsoft.AspNetCore.Mvc;
+using Rutana.API.IAM.Domain.Model.Aggregates;
 using Rutana.API.Planning.Domain.Model.Commands;
 using Rutana.API.Planning.Domain.Model.Queries;
 using Rutana.API.Planning.Domain.Services;
@@ -22,6 +23,35 @@ public class RouteDraftsController(
     IRouteCommandService routeCommandService,
     IRouteQueryService routeQueryService) : ControllerBase
 {
+    /// <summary>
+    /// Get route drafts by execution date.
+    /// </summary>
+    /// <param name="executionDate">The execution date to filter by.</param>
+    /// <returns>A list of route draft summary resources.</returns>
+    [HttpGet]
+    [SwaggerOperation(
+        Summary = "Get route drafts by execution date",
+        Description = "Get all route drafts for a specific execution date for the current user's organization",
+        OperationId = "GetRouteDraftsByExecutionDate")]
+    [SwaggerResponse(StatusCodes.Status200OK, "The route drafts were found", typeof(IEnumerable<RouteDraftSummaryResource>))]
+    [SwaggerResponse(StatusCodes.Status401Unauthorized, "User not authenticated or not associated with an organization")]
+    public async Task<IActionResult> GetRouteDraftsByExecutionDate([FromQuery] DateTime executionDate)
+    {
+        // Get authenticated user from HttpContext.Items (set by RequestAuthorizationMiddleware)
+        var user = HttpContext.Items["User"] as User;
+        
+        if (user == null || user.OrganizationId == null)
+        {
+            return Unauthorized("User not authenticated or not associated with an organization");
+        }
+        
+        var organizationId = user.OrganizationId.Value;
+        var query = new GetRouteDraftsByExecutionDateQuery(organizationId, executionDate);
+        var routeDrafts = await routeQueryService.Handle(query);
+        var resources = routeDrafts.Select(RouteDraftSummaryResourceFromEntityAssembler.ToResourceFromEntity);
+        return Ok(resources);
+    }
+
     /// <summary>
     /// Get route draft by id.
     /// </summary>

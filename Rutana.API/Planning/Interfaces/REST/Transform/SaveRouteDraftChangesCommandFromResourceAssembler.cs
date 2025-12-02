@@ -22,7 +22,6 @@ public static class SaveRouteDraftChangesCommandFromResourceAssembler
             resource.TeamMemberIds,
             resource.VehicleId,
             resource.ColorCode,
-            resource.StartedAt,
-            resource.EndedAt);
+            resource.ExecutionDate);
     }
 }

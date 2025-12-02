@@ -1,3 +1,4 @@
+using Rutana.API.CRM.Domain.Model.Aggregates;
 using Rutana.API.CRM.Domain.Repositories;
 using Rutana.API.CRM.Interfaces.ACL;
 using Rutana.API.Shared.Domain.Repositories;
@@ -40,5 +41,28 @@ public class CrmContextFacade(
     {
         var location = await locationRepository.FindByIdAsync(locationId);
         return location?.IsEnabled ?? false;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<Location>> GetLocationsByOrganizationIdAsync(int organizationId, bool onlyEnabled = true)
+    {
+        // Get all clients for the organization
+        var clients = await clientRepository.FindByOrganizationIdAsync(organizationId);
+        
+        // Get all locations for each client
+        var allLocations = new List<Location>();
+        foreach (var client in clients)
+        {
+            var clientLocations = await locationRepository.FindByClientIdAsync(client.Id);
+            allLocations.AddRange(clientLocations);
+        }
+        
+        // Filter by enabled status if requested
+        if (onlyEnabled)
+        {
+            return allLocations.Where(l => l.IsEnabled);
+        }
+        
+        return allLocations;
     }
 }

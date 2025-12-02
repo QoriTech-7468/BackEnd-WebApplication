@@ -1,3 +1,5 @@
+using Rutana.API.CRM.Domain.Model.Aggregates;
+
 namespace Rutana.API.Planning.Application.Internal.OutboundServices;
 
 /// <summary>
@@ -26,4 +28,12 @@ public interface ICrmService
     /// <param name="locationId">The location identifier.</param>
     /// <returns>The client identifier if found; otherwise, null.</returns>
     Task<int?> GetClientIdByLocationIdAsync(int locationId);
+
+    /// <summary>
+    /// Gets all locations for a specific organization.
+    /// </summary>
+    /// <param name="organizationId">The organization identifier.</param>
+    /// <param name="onlyEnabled">If true, returns only enabled locations. Default is true.</param>
+    /// <returns>A collection of locations belonging to the organization.</returns>
+    Task<IEnumerable<Location>> GetLocationsByOrganizationIdAsync(int organizationId, bool onlyEnabled = true);
 }

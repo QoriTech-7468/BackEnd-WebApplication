@@ -23,9 +23,10 @@ public class Route
         OrganizationId = new OrganizationId(0);
         ColorCode = new ColorCode();
         VehicleId = new VehicleId(0);
+        ExecutionDate = DateTime.UtcNow.Date;
         StartedAt = DateTime.UtcNow;
         EndedAt = null;
-        Status = RouteStatus.Published;
+        Status = RouteStatus.NotStarted;
     }
 
     /// <summary>
@@ -34,6 +35,7 @@ public class Route
     /// <param name="organizationId">The organization identifier.</param>
     /// <param name="colorCode">The color code.</param>
     /// <param name="vehicleId">The vehicle identifier.</param>
+    /// <param name="executionDate">The date when the route will be executed.</param>
     /// <param name="startedAt">The start time.</param>
     /// <param name="endedAt">The end time.</param>
     /// <param name="deliveries">The list of deliveries.</param>
@@ -42,6 +44,7 @@ public class Route
         OrganizationId organizationId,
         ColorCode colorCode,
         VehicleId vehicleId,
+        DateTime executionDate,
         DateTime startedAt,
         DateTime? endedAt,
         List<Delivery> deliveries,
@@ -50,9 +53,10 @@ public class Route
         OrganizationId = organizationId;
         ColorCode = colorCode;
         VehicleId = vehicleId;
+        ExecutionDate = executionDate.Date; // Store only the date part
         StartedAt = startedAt;
         EndedAt = endedAt;
-        Status = RouteStatus.Published;
+        Status = RouteStatus.NotStarted;
         
         _deliveries.AddRange(deliveries);
         _teamMembers.AddRange(teamMembers);
@@ -80,6 +84,15 @@ public class Route
     /// References Fleet bounded context (Vehicle aggregate).
     /// </remarks>
     public VehicleId VehicleId { get; private set; }
+
+    /// <summary>
+    /// Gets the date when the route will be executed.
+    /// </summary>
+    /// <remarks>
+    /// This date is used for planning and filtering routes by execution date.
+    /// Only the date part is stored (time is ignored).
+    /// </remarks>
+    public DateTime ExecutionDate { get; private set; }
 
     /// <summary>
     /// Gets the actual start time of the route.
@@ -111,12 +124,13 @@ public class Route
     /// </summary>
     public void Start()
     {
-        if (Status != RouteStatus.Published)
+        if (Status != RouteStatus.NotStarted)
         {
-            throw new InvalidOperationException("Only published routes can be started.");
+            throw new InvalidOperationException("Only routes that have not started can be started.");
         }
 
         StartedAt = DateTime.UtcNow;
+        Status = RouteStatus.InProgress;
     }
 
     /// <summary>
@@ -124,9 +138,9 @@ public class Route
     /// </summary>
     public void Complete()
     {
-        if (Status != RouteStatus.Published)
+        if (Status != RouteStatus.InProgress)
         {
-            throw new InvalidOperationException("Only published routes can be completed.");
+            throw new InvalidOperationException("Only routes in progress can be completed.");
         }
 
         // Verify all deliveries are completed or rejected
@@ -135,7 +149,7 @@ public class Route
             throw new InvalidOperationException("Cannot complete route with pending or in-progress deliveries.");
         }
 
-        Status = RouteStatus.Completed;
+        Status = RouteStatus.Finished;
         EndedAt = DateTime.UtcNow;
     }
 
@@ -151,19 +165,24 @@ public class Route
 
         // Create copies of deliveries and team members
         var deliveries = draft.Deliveries
-            .Select(d => new Delivery(d.LocationId))
+            .Select(d => new Delivery(d.LocationId, draft.ExecutionDate))
             .ToList();
 
         var teamMembers = draft.TeamMembers
             .Select(tm => new RouteTeamMember(tm.UserId))
             .ToList();
 
+        // When creating a Route from a RouteDraft, use ExecutionDate as the initial StartedAt
+        // The actual StartedAt will be set when the route is started via Start() method
+        var initialStartedAt = draft.ExecutionDate.Date.AddHours(8); // Default to 8 AM on execution date
+        
         return new Route(
             draft.OrganizationId,
             draft.ColorCode,
-            draft.VehicleId,
-            draft.StartedAt!.Value,
-            draft.EndedAt,
+            draft.VehicleId!,
+            draft.ExecutionDate,
+            initialStartedAt,
+            null, // EndedAt will be set when route is completed
             deliveries,
             teamMembers);
     }

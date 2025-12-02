@@ -16,16 +16,19 @@ public class Delivery
         Id = new DeliveryId();
         LocationId = new LocationId();
         Status = DeliveryStatus.Pending;
+        ExecutionDate = DateTime.UtcNow.Date;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Delivery"/> class.
     /// </summary>
     /// <param name="locationId">The location identifier for this delivery.</param>
-    public Delivery(LocationId locationId)
+    /// <param name="executionDate">The execution date for this delivery.</param>
+    public Delivery(LocationId locationId, DateTime executionDate)
     {
         Id = new DeliveryId();
         LocationId = locationId;
+        ExecutionDate = executionDate.Date; // Store only the date part
         Status = DeliveryStatus.Pending;
         RejectReason = null;
         RejectDetails = null;
@@ -43,6 +46,15 @@ public class Delivery
     /// References CRM bounded context (Location aggregate).
     /// </remarks>
     public LocationId LocationId { get; private set; }
+
+    /// <summary>
+    /// Gets the execution date for this delivery.
+    /// </summary>
+    /// <remarks>
+    /// This date is used for planning and filtering deliveries by execution date.
+    /// Only the date part is stored (time is ignored).
+    /// </remarks>
+    public DateTime ExecutionDate { get; private set; }
 
     /// <summary>
     /// Gets the current status of the delivery.

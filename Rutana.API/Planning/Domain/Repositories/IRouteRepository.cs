@@ -31,4 +31,20 @@ public interface IRouteRepository : IBaseRepository<RouteAggregate>
     /// <param name="organizationId">The organization identifier value object.</param>
     /// <returns>A collection of completed routes.</returns>
     Task<IEnumerable<RouteAggregate>> FindCompletedByOrganizationIdAsync(OrganizationId organizationId);
+
+    /// <summary>
+    /// Finds all routes for a specific execution date and organization.
+    /// </summary>
+    /// <param name="organizationId">The organization identifier.</param>
+    /// <param name="executionDate">The execution date to filter by.</param>
+    /// <returns>A collection of routes.</returns>
+    Task<IEnumerable<RouteAggregate>> FindByExecutionDateAsync(OrganizationId organizationId, DateTime executionDate);
+
+    /// <summary>
+    /// Gets all location IDs from deliveries that belong to routes or route drafts with the specified execution date and organization.
+    /// </summary>
+    /// <param name="organizationId">The organization identifier.</param>
+    /// <param name="executionDate">The execution date to filter by.</param>
+    /// <returns>A collection of unique location IDs.</returns>
+    Task<IEnumerable<int>> GetUsedLocationIdsByExecutionDateAsync(OrganizationId organizationId, DateTime executionDate);
 }
