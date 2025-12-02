@@ -42,12 +42,13 @@ public class RouteRepository(AppDbContext context)
     public async Task<IEnumerable<RouteAggregate>> FindActiveByOrganizationIdAsync(OrganizationId organizationId)
     {
         // OrganizationId has HasConversion - must compare the value object directly, not .Value
+        // Active routes are those that are NotStarted or InProgress (not Finished)
         return await Context.Set<RouteAggregate>()
             .Include(r => r.Deliveries)
             .Include(r => r.TeamMembers)
             .Where(r =>
                 r.OrganizationId == organizationId &&
-                r.Status == RouteStatus.Published)
+                (r.Status == RouteStatus.NotStarted || r.Status == RouteStatus.InProgress))
             .ToListAsync();
     }
 
@@ -60,7 +61,7 @@ public class RouteRepository(AppDbContext context)
             .Include(r => r.TeamMembers)
             .Where(r =>
                 r.OrganizationId == organizationId &&
-                r.Status == RouteStatus.Completed)
+                r.Status == RouteStatus.Finished)
             .ToListAsync();
     }
 }

@@ -6,17 +6,17 @@ namespace Rutana.API.Planning.Domain.Model.ValueObjects;
 public enum RouteStatus
 {
     /// <summary>
-    /// The route is in draft state and can be edited.
+    /// The route has been published but has not started yet.
     /// </summary>
-    Draft = 1,
+    NotStarted = 1,
 
     /// <summary>
-    /// The route has been published and is active.
+    /// The route is currently in progress (execution has started).
     /// </summary>
-    Published = 2,
+    InProgress = 2,
 
     /// <summary>
-    /// The route has been completed.
+    /// The route has been finished/completed.
     /// </summary>
-    Completed = 3
+    Finished = 3
 }

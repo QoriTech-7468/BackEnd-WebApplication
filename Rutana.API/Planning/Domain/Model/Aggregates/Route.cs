@@ -26,7 +26,7 @@ public class Route
         ExecutionDate = DateTime.UtcNow.Date;
         StartedAt = DateTime.UtcNow;
         EndedAt = null;
-        Status = RouteStatus.Published;
+        Status = RouteStatus.NotStarted;
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ public class Route
         ExecutionDate = executionDate.Date; // Store only the date part
         StartedAt = startedAt;
         EndedAt = endedAt;
-        Status = RouteStatus.Published;
+        Status = RouteStatus.NotStarted;
         
         _deliveries.AddRange(deliveries);
         _teamMembers.AddRange(teamMembers);
@@ -124,12 +124,13 @@ public class Route
     /// </summary>
     public void Start()
     {
-        if (Status != RouteStatus.Published)
+        if (Status != RouteStatus.NotStarted)
         {
-            throw new InvalidOperationException("Only published routes can be started.");
+            throw new InvalidOperationException("Only routes that have not started can be started.");
         }
 
         StartedAt = DateTime.UtcNow;
+        Status = RouteStatus.InProgress;
     }
 
     /// <summary>
@@ -137,9 +138,9 @@ public class Route
     /// </summary>
     public void Complete()
     {
-        if (Status != RouteStatus.Published)
+        if (Status != RouteStatus.InProgress)
         {
-            throw new InvalidOperationException("Only published routes can be completed.");
+            throw new InvalidOperationException("Only routes in progress can be completed.");
         }
 
         // Verify all deliveries are completed or rejected
@@ -148,7 +149,7 @@ public class Route
             throw new InvalidOperationException("Cannot complete route with pending or in-progress deliveries.");
         }
 
-        Status = RouteStatus.Completed;
+        Status = RouteStatus.Finished;
         EndedAt = DateTime.UtcNow;
     }
 
