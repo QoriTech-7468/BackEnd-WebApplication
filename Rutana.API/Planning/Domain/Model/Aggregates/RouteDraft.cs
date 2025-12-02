@@ -126,7 +126,7 @@ public class RouteDraft
         {
             foreach (var locationId in command.LocationIds)
             {
-                _deliveries.Add(new Delivery(new LocationId(locationId)));
+                _deliveries.Add(new Delivery(new LocationId(locationId), ExecutionDate));
             }
         }
 
@@ -152,7 +152,7 @@ public class RouteDraft
             throw new InvalidOperationException("Location is already added to this route.");
         }
 
-        _deliveries.Add(new Delivery(locationId));
+        _deliveries.Add(new Delivery(locationId, ExecutionDate));
     }
 
     /// <summary>

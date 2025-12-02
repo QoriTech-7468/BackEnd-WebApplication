@@ -1,3 +1,4 @@
+using Rutana.API.CRM.Domain.Model.Aggregates;
 using Rutana.API.Planning.Domain.Model.Queries;
 using RouteDraftAggregate = Rutana.API.Planning.Domain.Model.Aggregates.RouteDraft;
 using RouteAggregate = Rutana.API.Planning.Domain.Model.Aggregates.Route;
@@ -52,4 +53,11 @@ public interface IRouteQueryService
     /// <param name="query">The <see cref="GetRoutesByExecutionDateQuery"/> query to handle.</param>
     /// <returns>A collection of routes for the specified execution date.</returns>
     Task<IEnumerable<RouteAggregate>> Handle(GetRoutesByExecutionDateQuery query);
+
+    /// <summary>
+    /// Handles the get available locations for deliveries query.
+    /// </summary>
+    /// <param name="query">The <see cref="GetAvailableLocationsForDeliveriesQuery"/> query to handle.</param>
+    /// <returns>A collection of available locations that can be used to create deliveries.</returns>
+    Task<IEnumerable<Location>> Handle(GetAvailableLocationsForDeliveriesQuery query);
 }

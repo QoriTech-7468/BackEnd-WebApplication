@@ -33,4 +33,12 @@ public interface ICrmContextFacade
     /// <param name="locationId">The location identifier.</param>
     /// <returns>True if the location is enabled; otherwise, false.</returns>
     Task<bool> IsLocationEnabledAsync(int locationId);
+
+    /// <summary>
+    /// Gets all locations for a specific organization.
+    /// </summary>
+    /// <param name="organizationId">The organization identifier.</param>
+    /// <param name="onlyEnabled">If true, returns only enabled locations. Default is true.</param>
+    /// <returns>A collection of locations belonging to the organization.</returns>
+    Task<IEnumerable<Domain.Model.Aggregates.Location>> GetLocationsByOrganizationIdAsync(int organizationId, bool onlyEnabled = true);
 }

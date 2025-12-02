@@ -165,7 +165,7 @@ public class Route
 
         // Create copies of deliveries and team members
         var deliveries = draft.Deliveries
-            .Select(d => new Delivery(d.LocationId))
+            .Select(d => new Delivery(d.LocationId, draft.ExecutionDate))
             .ToList();
 
         var teamMembers = draft.TeamMembers

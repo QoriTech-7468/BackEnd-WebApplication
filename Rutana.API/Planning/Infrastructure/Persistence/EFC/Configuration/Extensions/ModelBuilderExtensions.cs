@@ -190,6 +190,12 @@ public static class ModelBuilderExtensions
             .HasColumnName("LocationId")
             .IsRequired();
 
+        // ExecutionDate as date property (date only, no time)
+        delivery.Property(d => d.ExecutionDate)
+            .HasColumnName("ExecutionDate")
+            .IsRequired()
+            .HasColumnType("date");
+
         // Status enum as string
         delivery.Property(d => d.Status)
             .HasConversion<string>()

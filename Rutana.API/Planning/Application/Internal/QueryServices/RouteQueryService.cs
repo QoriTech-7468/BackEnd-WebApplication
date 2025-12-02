@@ -1,3 +1,6 @@
+using Rutana.API.CRM.Domain.Model.Aggregates;
+using Rutana.API.CRM.Domain.Model.ValueObjects;
+using Rutana.API.Planning.Application.Internal.OutboundServices;
 using Rutana.API.Planning.Domain.Model.Queries;
 using Rutana.API.Planning.Domain.Repositories;
 using Rutana.API.Planning.Domain.Services;
@@ -13,9 +16,11 @@ namespace Rutana.API.Planning.Application.Internal.QueryServices;
 /// </summary>
 /// <param name="routeRepository">The route repository.</param>
 /// <param name="routeDraftRepository">The route draft repository.</param>
+/// <param name="crmService">The CRM service for accessing location data.</param>
 public class RouteQueryService(
     IRouteRepository routeRepository,
-    IRouteDraftRepository routeDraftRepository)
+    IRouteDraftRepository routeDraftRepository,
+    ICrmService crmService)
     : IRouteQueryService
 {
     /// <inheritdoc />
@@ -56,5 +61,24 @@ public class RouteQueryService(
     {
         var organizationId = new OrganizationId(query.OrganizationId);
         return await routeRepository.FindByExecutionDateAsync(organizationId, query.ExecutionDate);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<Location>> Handle(GetAvailableLocationsForDeliveriesQuery query)
+    {
+        // 1. Get all enabled locations for the organization
+        var allLocations = await crmService.GetLocationsByOrganizationIdAsync(query.OrganizationId, onlyEnabled: true);
+
+        // 2. Get all used LocationIds from deliveries with the specified execution date (optimized query)
+        // Execute sequentially to avoid DbContext concurrency issues (both services use the same AppDbContext)
+        var organizationId = new OrganizationId(query.OrganizationId);
+        var usedLocationIds = (await routeRepository.GetUsedLocationIdsByExecutionDateAsync(organizationId, query.ExecutionDate)).ToHashSet();
+
+        // 3. Filter locations that are NOT in the used LocationIds set
+        var availableLocations = allLocations
+            .Where(location => !usedLocationIds.Contains(location.Id.Value))
+            .ToList();
+
+        return availableLocations;
     }
 }
