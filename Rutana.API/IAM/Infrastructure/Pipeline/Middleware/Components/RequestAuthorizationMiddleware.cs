@@ -13,8 +13,11 @@ public class RequestAuthorizationMiddleware(RequestDelegate next)
         ITokenService tokenService)
     {
         Console.WriteLine("Entering InvokeAsync");
-        var allowAnonymous = context.Request.HttpContext.GetEndpoint()!.Metadata
-            .Any(m => m.GetType() == typeof(AllowAnonymousAttribute));
+        
+        // GetEndpoint() can be null for unmatched routes or Swagger UI
+        var endpoint = context.GetEndpoint();
+        var allowAnonymous = endpoint?.Metadata
+            .Any(m => m.GetType() == typeof(AllowAnonymousAttribute)) ?? false;
         
         if (allowAnonymous)
         {
