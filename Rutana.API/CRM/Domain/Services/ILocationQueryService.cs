@@ -21,4 +21,11 @@ public interface ILocationQueryService
     /// <param name="query">The query.</param>
     /// <returns>The location if found, otherwise null.</returns>
     Task<Location?> Handle(GetLocationByIdQuery query);
+
+    /// <summary>
+    /// Handles the get all locations query.
+    /// </summary>
+    /// <param name="query">The query.</param>
+    /// <returns>A collection of locations.</returns>
+    Task<IEnumerable<Location>> Handle(GetAllLocationsQuery query);
 }

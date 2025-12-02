@@ -14,8 +14,10 @@ public class Location
     /// </summary>
     public Location()
     {
-        Name = new LocationName();
-        Proximity = Proximity.Near;
+        Address = new Address();
+        Latitude = new Latitude();
+        Longitude = new Longitude();
+        Proximity = Proximity.Close;
         ClientId = new ClientId(0);
         IsEnabled = true;
     }
@@ -23,12 +25,16 @@ public class Location
     /// <summary>
     /// Initializes a new instance of the <see cref="Location"/> class with specified parameters.
     /// </summary>
-    /// <param name="name">The location name.</param>
+    /// <param name="address">The location address.</param>
+    /// <param name="latitude">The latitude coordinate.</param>
+    /// <param name="longitude">The longitude coordinate.</param>
     /// <param name="proximity">The proximity information.</param>
     /// <param name="clientId">The client identifier.</param>
-    private Location(LocationName name, Proximity proximity, ClientId clientId)
+    private Location(Address address, Latitude latitude, Longitude longitude, Proximity proximity, ClientId clientId)
     {
-        Name = name;
+        Address = address;
+        Latitude = latitude;
+        Longitude = longitude;
         Proximity = proximity;
         ClientId = clientId;
         IsEnabled = true;
@@ -39,7 +45,9 @@ public class Location
     /// </summary>
     /// <param name="command">The register location command.</param>
     public Location(RegisterLocationCommand command) : this(
-        LocationName.Create(command.Name),
+        Address.Create(command.Address),
+        Latitude.Create(command.Latitude),
+        Longitude.Create(command.Longitude),
         command.Proximity,
         new ClientId(command.ClientId))
     {
@@ -51,12 +59,22 @@ public class Location
     public LocationId Id { get; internal set; } = new LocationId(0);
 
     /// <summary>
-    /// Gets the location name.
+    /// Gets the location address.
     /// </summary>
-    public LocationName Name { get; private set; }
+    public Address Address { get; private set; }
 
     /// <summary>
-    /// Gets the proximity information (coordinates and address).
+    /// Gets the latitude coordinate.
+    /// </summary>
+    public Latitude Latitude { get; private set; }
+
+    /// <summary>
+    /// Gets the longitude coordinate.
+    /// </summary>
+    public Longitude Longitude { get; private set; }
+
+    /// <summary>
+    /// Gets the proximity information.
     /// </summary>
     public Proximity Proximity { get; private set; }
 
@@ -112,6 +130,28 @@ public class Location
         else
         {
             throw new ArgumentException($"Invalid state: {command.State}. Valid states are 'enabled' or 'disabled'.");
+        }
+    }
+
+    /// <summary>
+    /// Updates the location based on a command.
+    /// </summary>
+    /// <param name="command">The update location command.</param>
+    public void Update(UpdateLocationCommand command)
+    {
+        Address = Address.Create(command.Address);
+        Latitude = Latitude.Create(command.Latitude);
+        Longitude = Longitude.Create(command.Longitude);
+        Proximity = command.Proximity;
+        ClientId = new ClientId(command.ClientId);
+        
+        if (command.IsEnabled && !IsEnabled)
+        {
+            Enable();
+        }
+        else if (!command.IsEnabled && IsEnabled)
+        {
+            Disable();
         }
     }
 

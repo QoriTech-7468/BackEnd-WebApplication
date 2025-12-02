@@ -22,4 +22,11 @@ public interface IClientRepository : IBaseRepository<Client>
     /// <param name="organizationId">The organization identifier.</param>
     /// <returns>True if exists, otherwise false.</returns>
     Task<bool> ExistsByCompanyNameAndOrganizationIdAsync(string companyName, int organizationId);
+
+    /// <summary>
+    /// Finds all clients, optionally filtered by active status.
+    /// </summary>
+    /// <param name="isActive">Optional filter by active status. If null, returns all clients.</param>
+    /// <returns>A collection of clients.</returns>
+    Task<IEnumerable<Client>> FindAllAsync(bool? isActive = null);
 }

@@ -108,6 +108,24 @@ public class Client
     }
 
     /// <summary>
+    /// Updates the client based on a command.
+    /// </summary>
+    /// <param name="command">The update client command.</param>
+    public void Update(UpdateClientCommand command)
+    {
+        CompanyName = CompanyName.Create(command.CompanyName);
+        
+        if (command.IsEnabled && !IsEnabled)
+        {
+            Enable();
+        }
+        else if (!command.IsEnabled && IsEnabled)
+        {
+            Disable();
+        }
+    }
+
+    /// <summary>
     /// Factory method to create a new client.
     /// </summary>
     /// <param name="command">The register client command.</param>

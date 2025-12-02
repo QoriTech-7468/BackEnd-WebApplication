@@ -39,4 +39,17 @@ public class ClientRepository(AppDbContext context) : BaseRepository<Client>(con
         return await Context.Set<Client>()
             .AnyAsync(c => c.CompanyName.Value == companyName && c.OrganizationId == orgId);
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<Client>> FindAllAsync(bool? isActive = null)
+    {
+        var query = Context.Set<Client>().AsQueryable();
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(c => c.IsEnabled == isActive.Value);
+        }
+
+        return await query.ToListAsync();
+    }
 }

@@ -68,4 +68,24 @@ public class ClientCommandService(
             return null;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<Client?> Handle(UpdateClientCommand command)
+    {
+        var client = await clientRepository.FindByIdAsync(command.ClientId.Value);
+        if (client is null)
+            return null;
+
+        try
+        {
+            client.Update(command);
+            clientRepository.Update(client);
+            await unitOfWork.CompleteAsync();
+            return client;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
 }

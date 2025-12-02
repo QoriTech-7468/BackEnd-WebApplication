@@ -22,14 +22,8 @@ public class LocationCommandService(
     /// <inheritdoc />
     public async Task<Location?> Handle(RegisterLocationCommand command)
     {
-        // Verificar si ya existe una ubicación con el mismo nombre para el cliente
-        var exists = await locationRepository.ExistsByLocationNameAndClientIdAsync(
-            command.Name, 
-            command.ClientId);
-        
-        if (exists)
-            throw new InvalidOperationException(
-                $"A location with name '{command.Name}' already exists for this client.");
+        // Note: We no longer check for duplicate names since we're using Address now
+        // If needed, we could check for duplicate addresses per client in the future
 
         var location = new Location(command);
         await locationRepository.AddAsync(location);
@@ -62,6 +56,26 @@ public class LocationCommandService(
         catch (InvalidOperationException)
         {
             return location; // Already in that state, return location anyway
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<Location?> Handle(UpdateLocationCommand command)
+    {
+        var location = await locationRepository.FindByIdAsync(command.LocationId.Value);
+        if (location is null)
+            return null;
+
+        try
+        {
+            location.Update(command);
+            locationRepository.Update(location);
+            await unitOfWork.CompleteAsync();
+            return location;
         }
         catch (Exception)
         {

@@ -21,4 +21,11 @@ public interface IClientQueryService
     /// <param name="query">The query.</param>
     /// <returns>The client if found, otherwise null.</returns>
     Task<Client?> Handle(GetClientByIdQuery query);
+
+    /// <summary>
+    /// Handles the get all clients query.
+    /// </summary>
+    /// <param name="query">The query.</param>
+    /// <returns>A collection of clients.</returns>
+    Task<IEnumerable<Client>> Handle(GetAllClientsQuery query);
 }

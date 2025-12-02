@@ -15,35 +15,26 @@ public static class LocationResourceFromEntityAssembler
     /// <returns>The LocationResource.</returns>
     public static LocationResource ToResourceFromEntity(Location location)
     {
-        // Create a ClientSummaryResource with only the ClientId
-        var clientSummary = new ClientSummaryResource(
-            location.ClientId.Value,
-            string.Empty // We don't have client name here
-        );
-
         return new LocationResource(
             location.Id.Value,
-            location.Name.Value, //  Es Name, no LocationName
-            location.Proximity.ToString(),
+            location.Latitude.Value,
+            location.Longitude.Value,
+            location.Address.Value,
+            location.Proximity.ToString().ToLowerInvariant(),
             location.IsEnabled,
-            clientSummary
+            location.ClientId.Value
         );
     }
 
     /// <summary>
     /// Converts a Location entity with its Client to a LocationResource.
+    /// Note: This overload is kept for backward compatibility but returns the same structure.
     /// </summary>
     /// <param name="location">The Location entity.</param>
-    /// <param name="client">The Client entity that owns the location.</param>
+    /// <param name="client">The Client entity that owns the location (not used in current structure).</param>
     /// <returns>The LocationResource.</returns>
     public static LocationResource ToResourceFromEntity(Location location, Client client)
     {
-        return new LocationResource(
-            location.Id.Value,
-            location.Name.Value, //  Es Name, no LocationName
-            location.Proximity.ToString(),
-            location.IsEnabled,
-            ClientSummaryResourceFromEntityAssembler.ToResourceFromEntity(client)
-        );
+        return ToResourceFromEntity(location);
     }
 }

@@ -17,13 +17,7 @@ public static class ClientWithLocationsResourceAssembler
     public static ClientWithLocationsResource ToResourceFromEntity(Client client, IEnumerable<Location> locations)
     {
         var locationResources = locations.Select(location => 
-            new LocationResource(
-                location.Id.Value,
-                location.Name.Value, // Es Name, no LocationName
-                location.Proximity.ToString(),
-                location.IsEnabled,
-                ClientSummaryResourceFromEntityAssembler.ToResourceFromEntity(client)
-            ));
+            LocationResourceFromEntityAssembler.ToResourceFromEntity(location));
 
         return new ClientWithLocationsResource(
             client.Id.Value,
