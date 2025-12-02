@@ -5,4 +5,5 @@ namespace Rutana.API.Planning.Domain.Model.Commands;
 /// </summary>
 /// <param name="OrganizationId">The organization identifier.</param>
 /// <param name="ColorCode">The color code for route identification.</param>
-public record CreateRouteDraftCommand(int OrganizationId, string ColorCode);
+/// <param name="ExecutionDate">The date when the route will be executed.</param>
+public record CreateRouteDraftCommand(int OrganizationId, string ColorCode, DateTime ExecutionDate);

@@ -26,8 +26,7 @@ public static class RouteDraftResourceFromEntityAssembler
             entity.OrganizationId.Value,
             entity.VehicleId?.Value,
             entity.ColorCode.Value,
-            entity.StartedAt,
-            entity.EndedAt,
+            entity.ExecutionDate,
             deliveries,
             teamMembers);
     }

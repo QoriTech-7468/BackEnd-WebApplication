@@ -43,4 +43,19 @@ public class RouteDraftRepository(AppDbContext context)
         return await Context.Set<RouteDraftAggregate>()
             .AnyAsync(rd => rd.Id == routeDraftId);
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<RouteDraftAggregate>> FindByExecutionDateAsync(OrganizationId organizationId, DateTime executionDate)
+    {
+        // Compare only the date part (ignore time)
+        // Since ExecutionDate is stored as 'date' type in DB, we can compare directly
+        // Normalize the input date to ensure only date part is used
+        // OrganizationId has HasConversion - must compare the value object directly, not .Value
+        var dateOnly = executionDate.Date;
+        return await Context.Set<RouteDraftAggregate>()
+            .Where(rd => 
+                rd.OrganizationId == organizationId &&
+                rd.ExecutionDate.Date == dateOnly.Date)
+            .ToListAsync();
+    }
 }

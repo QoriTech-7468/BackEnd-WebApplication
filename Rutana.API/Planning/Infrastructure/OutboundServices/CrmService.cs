@@ -1,3 +1,4 @@
+using Rutana.API.CRM.Domain.Model.Aggregates;
 using Rutana.API.CRM.Interfaces.ACL;
 using Rutana.API.Planning.Application.Internal.OutboundServices;
 
@@ -26,5 +27,11 @@ public class CrmService(ICrmContextFacade crmContextFacade) : ICrmService
     public async Task<int?> GetClientIdByLocationIdAsync(int locationId)
     {
         return await crmContextFacade.GetClientIdByLocationIdAsync(locationId);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<Location>> GetLocationsByOrganizationIdAsync(int organizationId, bool onlyEnabled = true)
+    {
+        return await crmContextFacade.GetLocationsByOrganizationIdAsync(organizationId, onlyEnabled);
     }
 }
