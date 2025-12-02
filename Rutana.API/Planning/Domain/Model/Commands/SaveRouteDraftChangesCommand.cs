@@ -9,14 +9,10 @@ namespace Rutana.API.Planning.Domain.Model.Commands;
 /// <param name="VehicleId">The vehicle identifier.</param>
 /// <param name="ColorCode">The color code for route identification.</param>
 /// <param name="ExecutionDate">The date when the route will be executed.</param>
-/// <param name="StartedAt">The planned start time.</param>
-/// <param name="EndedAt">The planned end time.</param>
 public record SaveRouteDraftChangesCommand(
     int RouteDraftId,
     IList<int>? LocationIds,
     IList<int>? TeamMemberIds,
     int? VehicleId,
     string? ColorCode,
-    DateTime? ExecutionDate,
-    DateTime? StartedAt,
-    DateTime? EndedAt);
+    DateTime? ExecutionDate);

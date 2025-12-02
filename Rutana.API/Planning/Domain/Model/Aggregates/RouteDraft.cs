@@ -26,8 +26,6 @@ public class RouteDraft
         ColorCode = new ColorCode();
         VehicleId = null;
         ExecutionDate = DateTime.UtcNow.Date;
-        StartedAt = null;
-        EndedAt = null;
     }
 
     /// <summary>
@@ -42,8 +40,6 @@ public class RouteDraft
         ColorCode = colorCode;
         VehicleId = null;
         ExecutionDate = executionDate.Date; // Store only the date part
-        StartedAt = null;
-        EndedAt = null;
     }
 
     /// <summary>
@@ -86,18 +82,9 @@ public class RouteDraft
     /// <remarks>
     /// This date is used for planning and filtering routes by execution date.
     /// Only the date part is stored (time is ignored).
+    /// StartedAt and EndedAt are only available in Route (published route), not in RouteDraft.
     /// </remarks>
     public DateTime ExecutionDate { get; private set; }
-
-    /// <summary>
-    /// Gets the planned start time for the route.
-    /// </summary>
-    public DateTime? StartedAt { get; private set; }
-
-    /// <summary>
-    /// Gets the planned end time for the route.
-    /// </summary>
-    public DateTime? EndedAt { get; private set; }
 
     /// <summary>
     /// Gets the list of deliveries for this route.
@@ -131,16 +118,6 @@ public class RouteDraft
         if (command.ExecutionDate.HasValue)
         {
             ExecutionDate = command.ExecutionDate.Value.Date; // Store only the date part
-        }
-
-        // Update start/end times
-        StartedAt = command.StartedAt;
-        EndedAt = command.EndedAt;
-
-        // Validate that EndedAt is after StartedAt if both are provided
-        if (StartedAt.HasValue && EndedAt.HasValue && EndedAt.Value <= StartedAt.Value)
-        {
-            throw new InvalidOperationException("End time must be after start time.");
         }
 
         // Update deliveries (clear and add new ones)
@@ -215,11 +192,6 @@ public class RouteDraft
         if (!_deliveries.Any())
         {
             throw new InvalidOperationException("Cannot publish route without deliveries.");
-        }
-
-        if (!StartedAt.HasValue)
-        {
-            throw new InvalidOperationException("Cannot publish route without start time.");
         }
     }
 

@@ -69,15 +69,6 @@ public static class ModelBuilderExtensions
             .IsRequired()
             .HasColumnType("date");
 
-        // DateTime properties
-        routeDraft.Property(rd => rd.StartedAt)
-            .HasColumnName("StartedAt")
-            .IsRequired(false);
-
-        routeDraft.Property(rd => rd.EndedAt)
-            .HasColumnName("EndedAt")
-            .IsRequired(false);
-
         // Relationships
         routeDraft.HasOne<Organization>()
             .WithMany()

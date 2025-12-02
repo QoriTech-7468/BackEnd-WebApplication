@@ -171,13 +171,17 @@ public class Route
             .Select(tm => new RouteTeamMember(tm.UserId))
             .ToList();
 
+        // When creating a Route from a RouteDraft, use ExecutionDate as the initial StartedAt
+        // The actual StartedAt will be set when the route is started via Start() method
+        var initialStartedAt = draft.ExecutionDate.Date.AddHours(8); // Default to 8 AM on execution date
+        
         return new Route(
             draft.OrganizationId,
             draft.ColorCode,
             draft.VehicleId!,
             draft.ExecutionDate,
-            draft.StartedAt!.Value,
-            draft.EndedAt,
+            initialStartedAt,
+            null, // EndedAt will be set when route is completed
             deliveries,
             teamMembers);
     }
